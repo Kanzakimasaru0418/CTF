@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CTF ツールボックス</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+JP:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f14; --panel:#121923; --panel2:#18212d; --line:#253142;
+  --text:#e6edf3; --muted:#8b98a9; --acc:#7ee787; --acc2:#79c0ff; --warn:#ffa657; --flag:#f2cc60;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace; --sans:'Noto Sans JP',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6}
+header{padding:20px 16px 8px;max-width:880px;margin:0 auto}
+header h1{margin:0;font-family:var(--mono);font-size:22px;letter-spacing:.02em}
+header h1 span{color:var(--acc)}
+header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 80%,transparent);padding:8px 0 10px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 16px;max-width:880px;margin:0 auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:7px 12px;border-radius:999px;font:600 13px var(--sans);cursor:pointer;white-space:nowrap}
+.tab[aria-selected=true]{background:var(--acc);color:#05210c;border-color:var(--acc)}
+main{max-width:880px;margin:0 auto;padding:0 16px 60px}
+section{display:none}
+section.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h2{font-size:18px;margin:4px 0 8px}
+details.help{background:var(--panel2);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:13.5px;color:#c9d4e0}
+details.help summary{cursor:pointer;color:var(--acc2);font-weight:600}
+details.help p{margin:6px 0}
+label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 4px}
+textarea,input,select{width:100%;background:#0a0e13;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:14px var(--mono)}
+textarea{min-height:96px;resize:vertical}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--acc2);outline-offset:-1px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button.b{border:0;border-radius:10px;padding:10px 14px;font:600 14px var(--sans);cursor:pointer;background:var(--acc);color:#05210c}
+button.b.sub{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button.b:active{transform:translateY(1px)}
+.out{margin-top:12px}
+.res{background:#0a0e13;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px;position:relative}
+.res.flag{border-color:var(--flag);box-shadow:0 0 0 1px var(--flag) inset}
+.res.best{border-color:var(--acc)}
+.res pre{margin:0;white-space:pre-wrap;word-break:break-all;font:13.5px/1.5 var(--mono);padding-right:56px}
+.res .meta{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding-right:56px}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:0 6px;font-family:var(--mono);font-size:11.5px;color:var(--acc2)}
+.badge{background:var(--flag);color:#2a1d00;border-radius:6px;padding:0 6px;font-weight:800;font-size:11.5px}
+.badge.g{background:var(--acc);color:#05210c}
+.copy{position:absolute;top:8px;right:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;font-size:12px;padding:3px 8px;cursor:pointer}
+.err{color:var(--warn);font-size:13px;margin-top:8px}
+.note{color:var(--muted);font-size:12.5px;margin-top:6px}
+.steps{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px}
+.freq{display:grid;grid-template-columns:repeat(26,1fr);gap:2px;align-items:end;height:90px;margin-top:8px}
+.freq div{background:var(--acc2);border-radius:2px 2px 0 0;min-height:1px;position:relative}
+.freqL{display:grid;grid-template-columns:repeat(26,1fr);gap:2px;font:10px var(--mono);color:var(--muted);text-align:center}
+table.kv{width:100%;border-collapse:collapse;font-size:13px}
+table.kv td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:top}
+table.kv td:first-child{color:var(--muted);white-space:nowrap;width:1%;padding-right:12px}
+table.kv td:last-child{font-family:var(--mono);word-break:break-all}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2px dashed var(--line);border-radius:14px;padding:26px 12px;margin:6px 0 4px;cursor:pointer;background:#0a0e13;color:var(--text)}
+.drop.over{border-color:var(--acc);background:#0f1a12}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop .big{font-weight:800;font-size:16px}
+.card h3{font-size:15px;margin:14px 0 6px;color:var(--acc2)}
+details.rep>summary{cursor:pointer;font-weight:700;list-style:none}
+details.rep>summary::-webkit-details-marker{display:none}
+details.rep>summary::before{content:'▶ ';color:var(--muted);font-size:12px}
+details.rep[open]>summary::before{content:'▼ '}
+.sub2{font-size:12px;color:var(--muted);font-weight:400;display:block;word-break:break-all}
+.warn{background:#2a1a08;border:1px solid #5a3a12;color:var(--warn);border-radius:10px;padding:8px 10px;font-size:13.5px;margin-top:8px}
+.hint{background:#0e1b2b;border:1px solid #1f3a5c;border-radius:10px;padding:8px 10px;font-size:13.5px;margin-top:8px}
+.preview{width:100%;height:auto;max-height:420px;object-fit:contain;border-radius:8px;border:1px solid var(--line);background:repeating-conic-gradient(#222 0 25%,#333 0 50%) 0 0/16px 16px;image-rendering:pixelated;display:block;margin-top:8px}
+.bp{display:flex;gap:8px;margin-top:8px}
+.bp select{flex:1}
+pre.dump{font:11px/1.45 var(--mono);overflow-x:auto;white-space:pre;background:#0a0e13;border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0 0;max-height:360px}
+.ok{color:var(--acc)} .ng{color:var(--warn)}
+.flagbig pre{font-size:15px;color:var(--flag);font-weight:600}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--acc);color:#05210c;padding:8px 14px;border-radius:999px;font-weight:600;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1><span>&gt;_</span> CTF ツールボックス</h1>
+  <p>暗号・エンコードをブラウザだけで解読します。入力した文字はどこにも送信されません。</p>
+</header>
+<nav><div class="tabs" role="tablist" id="tabs"></div></nav>
+<main>
+
+<!-- ファイル -->
+<section id="file" data-name="📁 ファイル">
+  <div class="card">
+    <h2>ファイルからフラグを探す</h2>
+    <details class="help"><summary>これは何？ 何を調べてくれるの？</summary>
+      <p>CTFの「フォレンジック」（ファイルの中から証拠を探す問題）や「ステガノグラフィ」（画像などに秘密のデータを隠す技術）でよく使われる隠し場所を、全部まとめて自動で調べます。</p>
+      <p>・ファイルの<b>本当の種類</b>（拡張子がウソでも中身で判定）<br>・中に書いてある<b>文字列</b>（strings）と、それがBase64などで変換されていないか<br>・<b>ファイルの後ろにくっついたデータ</b>や、<b>中に隠れた別のファイル</b>（binwalkと同じ考え方）<br>・ZIP・GZIP・PDF・TARの<b>中身</b><br>・画像の<b>EXIF</b>（撮影情報）やコメント、PNGのテキスト<br>・PNGの<b>高さの書き換え</b>（画像の下半分を隠すトリック）<br>・<b>LSB</b>（色の一番下のビットに文字を隠す方法）<br>・ファイル全体が<b>XOR</b>されていないか</p>
+      <p>ファイルはスマホやパソコンの中だけで調べるので、どこにも送られません。</p>
+    </details>
+    <label class="drop" id="fDrop" for="fIn">
+      <input type="file" id="fIn">
+      <span class="big">📂 ここをタップしてファイルを選ぶ</span>
+      <span class="note">パソコンならドラッグ＆ドロップ（ファイルをつかんでここに落とす）でもOK</span>
+    </label>
+    <label for="fFlag">フラグの頭の文字（わかれば。例: nitic）</label>
+    <input id="fFlag" placeholder="例: nitic">
+    <div class="note" id="fProg"></div>
+  </div>
+  <div id="fOut"></div>
+</section>
+
+<!-- 自動解析 -->
+<section id="magic" data-name="🔮 自動解析">
+  <div class="card">
+    <h2>自動解析（Magic）</h2>
+    <details class="help" open><summary>これは何？</summary>
+      <p>よくわからない文字列を貼ると、Base64・16進数・シーザー暗号など<b>いろいろな解読方法を自動で試します</b>。何回も重ねてエンコード（変換）されていても、最大3段まで追いかけます。</p>
+      <p><span class="badge">FLAG</span> がついた結果が、フラグ（CTFの答え。<code>flag{...}</code> のような形）の可能性が高いものです。</p>
+    </details>
+    <label for="mIn">解読したい文字列</label>
+    <textarea id="mIn" placeholder="例: NzM3OTZlNzQ3YjY4NmY2NzY1N2Q="></textarea>
+    <div class="row">
+      <div><label for="mFlag">フラグの頭の文字（わかれば）</label><input id="mFlag" placeholder="例: nitic"></div>
+      <div><label for="mDepth">何段まで追うか</label><select id="mDepth"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></div>
+    </div>
+    <div class="btns"><button class="b" id="mRun">解析する</button><button class="b sub" id="mEx">例を入れる</button></div>
+    <div class="out" id="mOut"></div>
+  </div>
+</section>
+
+<!-- 変換 -->
+<section id="conv" data-name="🔁 変換">
+  <div class="card">
+    <h2>エンコード／デコード</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>エンコード</b>（決まったルールで別の形に変えること）と<b>デコード</b>（元に戻すこと）を1つずつ手でやるツールです。</p>
+      <p>「結果を入力へ」を押すと、出てきた結果に続けて別の変換をかけられます（チェーン＝くさりのようにつなげること）。</p>
+    </details>
+    <label for="cIn">入力</label>
+    <textarea id="cIn" placeholder="ここに文字を入れる"></textarea>
+    <label for="cOp">方式</label>
+    <select id="cOp"></select>
+    <div class="btns">
+      <button class="b" id="cDec">デコード（元に戻す）</button>
+      <button class="b sub" id="cEnc">エンコード（変換する）</button>
+    </div>
+    <div class="out" id="cOut"></div>
+    <div class="btns"><button class="b sub" id="cChain">↑ 結果を入力へ</button><button class="b sub" id="cReset">手順をリセット</button></div>
+    <div class="steps" id="cSteps"></div>
+    <div class="note" id="cDesc"></div>
+  </div>
+</section>
+
+<!-- シーザー -->
+<section id="caesar" data-name="🏛 シーザー">
+  <div class="card">
+    <h2>シーザー暗号 総当たり</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>シーザー暗号</b>は、アルファベットを決まった数だけずらす暗号です（例：3つずらすと A→D、B→E）。ずらし方は25通りしかないので、<b>総当たり</b>（全部ためすこと）で必ず解けます。</p>
+      <p>いちばん英語っぽい結果に <span class="badge g">英語っぽい</span> がつきます。下のグラフは<b>頻度分析</b>（どの文字が何回出たか数えること）です。英語なら普通は E・T・A が多くなります。</p>
+    </details>
+    <label for="kIn">暗号文</label>
+    <textarea id="kIn" placeholder="例: Wkh txlfn eurzq ira"></textarea>
+    <div class="btns"><button class="b" id="kRun">25通り全部ためす</button></div>
+    <div id="kFreq"></div>
+    <div class="out" id="kOut"></div>
+  </div>
+</section>
+
+<!-- XOR -->
+<section id="xor" data-name="⊕ XOR">
+  <div class="card">
+    <h2>XOR</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>XOR</b>（排他的論理和。2つのビットが「ちがう」ときだけ1になる計算）は、CTFの暗号問題でとてもよく出ます。同じ鍵でもう一度XORすると元に戻る、という性質があります。</p>
+      <p>鍵がわからないときは「1バイト鍵を総当たり」で、鍵 0〜255 の256通りを全部ためせます。</p>
+    </details>
+    <div class="row">
+      <div><label for="xFmt">データの形式</label><select id="xFmt"><option value="hex">16進数 (hex)</option><option value="b64">Base64</option><option value="text">ふつうの文字</option><option value="dec">10進数 (0〜255)</option></select></div>
+      <div><label for="xKFmt">鍵の形式</label><select id="xKFmt"><option value="text">ふつうの文字</option><option value="hex">16進数 (hex)</option><option value="dec">10進数 (0〜255)</option></select></div>
+    </div>
+    <label for="xIn">データ</label>
+    <textarea id="xIn" placeholder="例: 1b1a121c0d"></textarea>
+    <label for="xKey">鍵（キー）</label>
+    <input id="xKey" placeholder="例: key">
+    <div class="btns"><button class="b" id="xRun">XORする</button><button class="b sub" id="xBrute">1バイト鍵を総当たり</button></div>
+    <div class="out" id="xOut"></div>
+  </div>
+</section>
+
+<!-- ヴィジュネル -->
+<section id="vig" data-name="🔑 ヴィジュネル">
+  <div class="card">
+    <h2>ヴィジュネル暗号</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>ヴィジュネル暗号</b>は、シーザー暗号の「ずらす数」を1文字ごとに変える暗号です。ずらす数は<b>鍵</b>（キー）の文字で決まります（A=0, B=1, …）。鍵がわかれば解けます。問題文の中に鍵のヒントが隠れていることが多いです。</p>
+    </details>
+    <label for="vIn">文章</label>
+    <textarea id="vIn" placeholder="例: LXFOPVEFRNHR"></textarea>
+    <label for="vKey">鍵（アルファベット）</label>
+    <input id="vKey" placeholder="例: LEMON">
+    <div class="btns"><button class="b" id="vDec">復号（元に戻す）</button><button class="b sub" id="vEnc">暗号化する</button></div>
+    <div class="out" id="vOut"></div>
+  </div>
+</section>
+
+<!-- 進数 -->
+<section id="base" data-name="🔢 進数">
+  <div class="card">
+    <h2>進数変換 ＆ 数→文字</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>進数</b>（数の書き方。2進数は0と1だけ、16進数は0〜9とa〜f）を変換します。とても大きな数もOKです。</p>
+      <p>「数を文字として読む」は、RSA暗号の問題などで出てくる大きな数を、文字に戻します（Pythonの <code>long_to_bytes</code> と同じ）。</p>
+    </details>
+    <label for="nIn">数</label>
+    <input id="nIn" placeholder="例: 0x666c6167 / 1718378855 / 0b1010">
+    <label for="nFrom">入力の進数</label>
+    <select id="nFrom"><option value="auto">自動（0x→16進, 0b→2進, 0o→8進, それ以外→10進）</option><option value="2">2進数</option><option value="8">8進数</option><option value="10">10進数</option><option value="16">16進数</option><option value="36">36進数</option></select>
+    <div class="btns"><button class="b" id="nRun">変換する</button></div>
+    <div class="out" id="nOut"></div>
+  </div>
+</section>
+
+<!-- ハッシュ -->
+<section id="hash" data-name="# ハッシュ">
+  <div class="card">
+    <h2>ハッシュを作る</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>ハッシュ</b>は、文字から作る「指紋」のような値です。同じ文字からは必ず同じハッシュができますが、ハッシュから元の文字に戻すことは（基本的に）できません。</p>
+    </details>
+    <label for="hIn">文字</label>
+    <textarea id="hIn" placeholder="例: password"></textarea>
+    <div class="btns"><button class="b" id="hRun">ハッシュを計算</button></div>
+    <div class="out" id="hOut"></div>
+  </div>
+  <div class="card">
+    <h2>ハッシュの種類を調べる</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p>ハッシュの<b>長さや形</b>から種類を推測します（MD5なら32文字、SHA-256なら64文字）。さらに、よく使われるパスワード約80個のハッシュと<b>照合</b>（同じか比べること）します。もっと本格的に調べるなら hashcat や John the Ripper というツールを使います。</p>
+    </details>
+    <label for="iIn">ハッシュ値</label>
+    <input id="iIn" placeholder="例: 5f4dcc3b5aa765d61d8327deb882cf99">
+    <div class="btns"><button class="b" id="iRun">調べる</button></div>
+    <div class="out" id="iOut"></div>
+  </div>
+</section>
+
+</main>
+<div class="toast" id="toast"></div>
+<script>
+/*CORE_START*/
+const TE = new TextEncoder();
+const TD = new TextDecoder('utf-8', { fatal: true });
+
+function toBytes(s) { return TE.encode(s); }
+function latin1(b) { let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return s; }
+function bytesToText(b) { try { return TD.decode(b); } catch (e) { return latin1(b); } }
+function asBytes(x) { return typeof x === 'string' ? toBytes(x) : x; }
+function asText(x) { return typeof x === 'string' ? x : bytesToText(x); }
+
+function isGood(c) {
+  return (c >= 32 && c < 127) || c === 9 || c === 10 || c === 13 ||
+    (c >= 0x3000 && c <= 0x9fff) || (c >= 0xff00 && c <= 0xffef);
+}
+function printableRatio(s) {
+  if (!s.length) return 0;
+  let g = 0; for (const ch of s) if (isGood(ch.codePointAt(0))) g++;
+  return g / [...s].length;
+}
+function showable(s) {
+  let o = '';
+  for (const ch of s) {
+    const c = ch.codePointAt(0);
+    if (isGood(c) || c > 0x9fff) o += ch;
+    else o += '\\x' + c.toString(16).padStart(2, '0');
+  }
+  return o;
+}
+
+// ---- hex ----
+function hexClean(s) { return s.replace(/0x|\\x|[\s:,]/gi, ''); }
+function hexDec(s) {
+  const h = hexClean(s);
+  if (!/^[0-9a-f]*$/i.test(h) || h.length % 2) throw new Error('16進数として読めません');
+  const out = new Uint8Array(h.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(h.substr(i * 2, 2), 16);
+  return out;
+}
+function hexEnc(x) { return [...asBytes(x)].map(b => b.toString(16).padStart(2, '0')).join(''); }
+
+// ---- base64 ----
+function b64Dec(s) {
+  let t = s.replace(/\s/g, '').replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/, '');
+  if (!/^[A-Za-z0-9+/]*$/.test(t) || t.length % 4 === 1) throw new Error('Base64として読めません');
+  while (t.length % 4) t += '=';
+  const bin = atob(t);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function b64Enc(x) {
+  const b = asBytes(x); let s = '';
+  for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+  return btoa(s);
+}
+
+// ---- base32 ----
+const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+function b32Dec(s) {
+  const t = s.toUpperCase().replace(/[\s=]/g, '');
+  let bits = 0, val = 0; const out = [];
+  for (const ch of t) {
+    const i = B32.indexOf(ch); if (i < 0) throw new Error('Base32として読めません');
+    val = (val << 5) | i; bits += 5;
+    if (bits >= 8) { out.push((val >>> (bits - 8)) & 255); bits -= 8; val &= (1 << bits) - 1; }
+  }
+  return Uint8Array.from(out);
+}
+function b32Enc(x) {
+  const b = asBytes(x); let bits = 0, val = 0, out = '';
+  for (const byte of b) {
+    val = (val << 8) | byte; bits += 8;
+    while (bits >= 5) { out += B32[(val >>> (bits - 5)) & 31]; bits -= 5; }
+    val &= (1 << bits) - 1;
+  }
+  if (bits > 0) out += B32[(val << (5 - bits)) & 31];
+  while (out.length % 8) out += '=';
+  return out;
+}
+
+// ---- bigint / base58 ----
+function bigToBytes(n) {
+  if (n === 0n) return new Uint8Array([0]);
+  let h = n.toString(16); if (h.length % 2) h = '0' + h;
+  return hexDec(h);
+}
+function bytesToBig(b) { return b.length ? BigInt('0x' + hexEnc(b)) : 0n; }
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+function b58Dec(s) {
+  const t = s.trim(); let n = 0n;
+  for (const ch of t) { const i = B58.indexOf(ch); if (i < 0) throw new Error('Base58として読めません'); n = n * 58n + BigInt(i); }
+  let lead = 0; while (lead < t.length && t[lead] === '1') lead++;
+  const body = n === 0n ? new Uint8Array(0) : bigToBytes(n);
+  const out = new Uint8Array(lead + body.length); out.set(body, lead); return out;
+}
+function b58Enc(x) {
+  const b = asBytes(x); let n = bytesToBig(b), out = '';
+  while (n > 0n) { out = B58[Number(n % 58n)] + out; n /= 58n; }
+  for (let i = 0; i < b.length && b[i] === 0; i++) out = '1' + out;
+  return out;
+}
+
+// ---- 2進 / 8進 / 10進 ----
+function binDec(s) {
+  const t = s.trim();
+  let groups = /\s/.test(t) ? t.split(/\s+/) : (t.length % 8 === 0 ? t.match(/.{8}/g) : null);
+  if (!groups || !groups.every(g => /^[01]{1,8}$/.test(g))) throw new Error('2進数として読めません（8桁ずつ）');
+  return Uint8Array.from(groups.map(g => parseInt(g, 2)));
+}
+function binEnc(x) { return [...asBytes(x)].map(b => b.toString(2).padStart(8, '0')).join(' '); }
+function octDec(s) {
+  const g = s.trim().split(/[\s,]+/);
+  if (!g.every(v => /^[0-7]{1,3}$/.test(v) && parseInt(v, 8) < 256)) throw new Error('8進数として読めません');
+  return Uint8Array.from(g.map(v => parseInt(v, 8)));
+}
+function octEnc(x) { return [...asBytes(x)].map(b => b.toString(8).padStart(3, '0')).join(' '); }
+function decDec(s) {
+  const g = s.trim().split(/[\s,]+/);
+  if (!g.every(v => /^\d+$/.test(v) && +v <= 0x10ffff)) throw new Error('10進数（文字コード）として読めません');
+  return g.map(v => String.fromCodePoint(+v)).join('');
+}
+function decEnc(x) { return [...asText(x)].map(c => c.codePointAt(0)).join(' '); }
+
+// ---- URL / HTML / Unicode ----
+function urlDec(s) {
+  const out = [];
+  const b = toBytes(s);
+  for (let i = 0; i < b.length; i++) {
+    if (b[i] === 37 && i + 2 < b.length && /^[0-9a-f]{2}$/i.test(String.fromCharCode(b[i + 1], b[i + 2]))) {
+      out.push(parseInt(String.fromCharCode(b[i + 1], b[i + 2]), 16)); i += 2;
+    } else out.push(b[i]);
+  }
+  return Uint8Array.from(out);
+}
+function urlEnc(x) { return [...asBytes(x)].map(b => /[A-Za-z0-9\-_.~]/.test(String.fromCharCode(b)) ? String.fromCharCode(b) : '%' + b.toString(16).toUpperCase().padStart(2, '0')).join(''); }
+const ENT = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'", nbsp: ' ' };
+function htmlDec(s) {
+  return s.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
+    .replace(/&(lt|gt|amp|quot|apos|nbsp);/g, (_, n) => ENT[n]);
+}
+function htmlEnc(x) { return [...asText(x)].map(c => '&#' + c.codePointAt(0) + ';').join(''); }
+function uniDec(s) {
+  return s.replace(/\\u\{([0-9a-f]{1,6})\}/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/\\u([0-9a-f]{4})/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/\\x([0-9a-f]{2})/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
+}
+function uniEnc(x) { return [...asText(x)].map(c => { const n = c.codePointAt(0); return n > 0xffff ? '\\u{' + n.toString(16) + '}' : '\\u' + n.toString(16).padStart(4, '0'); }).join(''); }
+
+// ---- モールス ----
+const MORSE = { A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.', H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.', O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..', 0: '-----', 1: '.----', 2: '..---', 3: '...--', 4: '....-', 5: '.....', 6: '-....', 7: '--...', 8: '---..', 9: '----.', '.': '.-.-.-', ',': '--..--', '?': '..--..', '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-', ':': '---...', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.', '@': '.--.-.', '{': '-.--.', '}': '-.--.-' };
+const MORSE_R = {}; for (const k in MORSE) if (!(MORSE[k] in MORSE_R)) MORSE_R[MORSE[k]] = k;
+function morseDec(s) {
+  const t = s.replace(/_/g, '-').replace(/[•·]/g, '.').trim();
+  return t.split(/\s*[\/|]\s*|\s{3,}/).map(w => w.trim().split(/\s+/).map(c => c ? (MORSE_R[c] || '?') : '').join('')).join(' ');
+}
+function morseEnc(x) { return [...asText(x).toUpperCase()].map(c => c === ' ' ? '/' : (MORSE[c] || '?')).join(' '); }
+
+// ---- 換字（文字の置きかえ） ----
+function caesar(s, k) {
+  k = ((k % 26) + 26) % 26;
+  return s.replace(/[a-z]/g, c => String.fromCharCode((c.charCodeAt(0) - 97 + k) % 26 + 97))
+    .replace(/[A-Z]/g, c => String.fromCharCode((c.charCodeAt(0) - 65 + k) % 26 + 65));
+}
+function rot13(x) { return caesar(asText(x), 13); }
+function rot47(x) { return [...asText(x)].map(c => { const n = c.charCodeAt(0); return n >= 33 && n <= 126 ? String.fromCharCode(33 + (n - 33 + 47) % 94) : c; }).join(''); }
+function atbash(x) {
+  return asText(x).replace(/[a-z]/g, c => String.fromCharCode(219 - c.charCodeAt(0)))
+    .replace(/[A-Z]/g, c => String.fromCharCode(155 - c.charCodeAt(0)));
+}
+function reverse(x) { return [...asText(x)].reverse().join(''); }
+
+function vigenere(s, key, decrypt) {
+  const k = key.toLowerCase().replace(/[^a-z]/g, '');
+  if (!k) throw new Error('鍵はアルファベットで入れてね');
+  let j = 0;
+  return s.replace(/[a-zA-Z]/g, c => {
+    const base = c <= 'Z' ? 65 : 97;
+    const sh = k.charCodeAt(j++ % k.length) - 97;
+    return String.fromCharCode((c.charCodeAt(0) - base + (decrypt ? 26 - sh : sh)) % 26 + base);
+  });
+}
+
+// 英語らしさ（カイ二乗：小さいほど英語っぽい）
+const EN = [8.2, 1.5, 2.8, 4.3, 12.7, 2.2, 2.0, 6.1, 7.0, 0.15, 0.77, 4.0, 2.4, 6.7, 7.5, 1.9, 0.095, 6.0, 6.3, 9.1, 2.8, 0.98, 2.4, 0.15, 2.0, 0.074];
+function englishScore(s) {
+  const cnt = new Array(26).fill(0); let n = 0;
+  for (const c of s.toLowerCase()) { const i = c.charCodeAt(0) - 97; if (i >= 0 && i < 26) { cnt[i]++; n++; } }
+  if (!n) return Infinity;
+  let chi = 0; for (let i = 0; i < 26; i++) { const e = EN[i] / 100 * n; chi += (cnt[i] - e) ** 2 / e; }
+  let bonus = 0;
+  const words = s.toLowerCase().match(/[a-z]+/g) || [];
+  for (const w of words) if (COMMON_WORDS.has(w)) bonus += w.length;
+  return chi / n - bonus / Math.max(1, n) * 10;
+}
+const COMMON_WORDS = new Set('the be to of and a in that have i it for not on with he as you do at this but his by from they we say her she or an will my one all would there their what so up out if about who get which go me when make can like time no just him know take people into year your good some could them see other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us is are was were flag ctf quick brown fox jumps lazy dog hello world secret key password answer here'.split(' '));
+function letterFreq(s) {
+  const cnt = new Array(26).fill(0);
+  for (const c of s.toLowerCase()) { const i = c.charCodeAt(0) - 97; if (i >= 0 && i < 26) cnt[i]++; }
+  return cnt;
+}
+
+// ---- XOR ----
+function xorBytes(data, key) {
+  if (!key.length) throw new Error('鍵が空です');
+  const out = new Uint8Array(data.length);
+  for (let i = 0; i < data.length; i++) out[i] = data[i] ^ key[i % key.length];
+  return out;
+}
+function parseByInput(s, fmt) {
+  if (fmt === 'hex') return hexDec(s);
+  if (fmt === 'b64') return b64Dec(s);
+  if (fmt === 'dec') return Uint8Array.from(s.trim().split(/[\s,]+/).map(v => { const n = +v; if (!(n >= 0 && n < 256)) throw new Error('0〜255の数を入れてね'); return n; }));
+  return toBytes(s);
+}
+
+// ---- MD5（ブラウザに標準でないので自前） ----
+function md5(input) {
+  const bytes = asBytes(input);
+  const S = [7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21];
+  const K = new Uint32Array(64); for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 4294967296);
+  const len = bytes.length, nb = ((len + 8) >> 6) + 1;
+  const buf = new Uint8Array(nb * 64); buf.set(bytes); buf[len] = 0x80;
+  const dv = new DataView(buf.buffer); const bl = len * 8;
+  dv.setUint32(buf.length - 8, bl >>> 0, true); dv.setUint32(buf.length - 4, Math.floor(bl / 4294967296), true);
+  let a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+  for (let off = 0; off < buf.length; off += 64) {
+    let A = a0, B = b0, C = c0, D = d0;
+    for (let i = 0; i < 64; i++) {
+      let F, g;
+      if (i < 16) { F = (B & C) | (~B & D); g = i; }
+      else if (i < 32) { F = (D & B) | (~D & C); g = (5 * i + 1) % 16; }
+      else if (i < 48) { F = B ^ C ^ D; g = (3 * i + 5) % 16; }
+      else { F = C ^ (B | ~D); g = (7 * i) % 16; }
+      F = (F + A + K[i] + dv.getUint32(off + g * 4, true)) >>> 0;
+      A = D; D = C; C = B;
+      B = (B + ((F << S[i]) | (F >>> (32 - S[i])))) >>> 0;
+    }
+    a0 = (a0 + A) >>> 0; b0 = (b0 + B) >>> 0; c0 = (c0 + C) >>> 0; d0 = (d0 + D) >>> 0;
+  }
+  const o = new DataView(new ArrayBuffer(16));
+  [a0, b0, c0, d0].forEach((v, i) => o.setUint32(i * 4, v, true));
+  return hexEnc(new Uint8Array(o.buffer));
+}
+async function shaHex(alg, input) {
+  const d = await crypto.subtle.digest(alg, asBytes(input));
+  return hexEnc(new Uint8Array(d));
+}
+function identifyHash(h) {
+  const t = h.trim();
+  if (/^\$2[abxy]?\$\d\d\$/.test(t)) return ['bcrypt（ブルートフォースにとても強い）'];
+  if (/^\$1\$/.test(t)) return ['md5crypt（Linuxの古いパスワード形式）'];
+  if (/^\$5\$/.test(t)) return ['sha256crypt（Linuxのパスワード形式）'];
+  if (/^\$6\$/.test(t)) return ['sha512crypt（今のLinuxで多いパスワード形式）'];
+  if (/^\$argon2/.test(t)) return ['Argon2（最新のパスワード用ハッシュ）'];
+  if (/^\$y\$/.test(t)) return ['yescrypt（新しいLinuxのパスワード形式）'];
+  if (!/^[0-9a-f]+$/i.test(t)) return [];
+  const m = { 8: ['CRC32'], 16: ['MySQL3 / CRC64'], 32: ['MD5', 'NTLM（Windowsのパスワード）', 'MD4'], 40: ['SHA-1', 'RIPEMD-160'], 56: ['SHA-224', 'SHA3-224'], 64: ['SHA-256', 'SHA3-256'], 96: ['SHA-384', 'SHA3-384'], 128: ['SHA-512', 'SHA3-512', 'Whirlpool'] };
+  return m[t.length] || [];
+}
+const COMMON_PW = ['password', '123456', '12345678', '123456789', '1234', '12345', 'qwerty', 'abc123', 'password1', 'admin', 'root', 'toor', 'letmein', 'welcome', 'monkey', 'dragon', 'master', 'iloveyou', 'sunshine', 'princess', 'football', 'baseball', 'shadow', 'superman', 'michael', 'secret', 'test', 'guest', 'hello', 'flag', 'ctf', 'pass', 'pass123', 'admin123', 'qwerty123', '111111', '000000', '654321', '666666', '123123', '1q2w3e4r', 'zaq12wsx', 'passw0rd', 'p@ssw0rd', 'trustno1', 'starwars', 'pokemon', 'hacker', 'hunter2', 'changeme', 'default', 'user', 'login', 'access', 'love', 'a', 'abc', 'abcdef', 'apple', 'banana', 'cat', 'dog', 'nara', 'kosen', 'japan', 'tokyo', 'osaka', 'yes', 'no', 'ok', '0', '1', '2', 'hogehoge', 'hoge', 'fuga', 'piyo', 'foo', 'bar', 'foobar', 'helloworld', 'hello world', ''];
+
+// ---- 自動解析（Magic） ----
+const DECODERS = [
+  { name: 'Base64', test: s => /^[A-Za-z0-9+/_\-\s]+=*\s*$/.test(s) && s.replace(/\s/g, '').length >= 4, fn: b64Dec },
+  { name: 'Base32', test: s => /^[A-Z2-7\s]+=*\s*$/i.test(s) && s.replace(/\s/g, '').length >= 8, fn: b32Dec },
+  { name: 'Base58', test: s => /^[1-9A-HJ-NP-Za-km-z]{6,}$/.test(s.trim()), fn: b58Dec },
+  { name: '16進数(Hex)', test: s => { const h = hexClean(s); return h.length >= 4 && h.length % 2 === 0 && /^[0-9a-f]+$/i.test(h); }, fn: hexDec },
+  { name: '2進数', test: s => /^[01\s]+$/.test(s) && s.replace(/\s/g, '').length >= 8, fn: binDec },
+  { name: '8進数', test: s => /^[0-7]{2,3}([\s,]+[0-7]{2,3})+\s*$/.test(s.trim()), fn: octDec },
+  { name: '10進数(文字コード)', test: s => /^\d{2,6}([\s,]+\d{2,6})+$/.test(s.trim()), fn: decDec },
+  { name: 'URLデコード', test: s => /%[0-9a-f]{2}/i.test(s), fn: urlDec },
+  { name: 'HTMLエンティティ', test: s => /&(#\d+|#x[0-9a-f]+|lt|gt|amp|quot);/i.test(s), fn: htmlDec },
+  { name: 'Unicodeエスケープ', test: s => /\\u[0-9a-f]{4}|\\x[0-9a-f]{2}|\\u\{/i.test(s), fn: uniDec },
+  { name: 'モールス信号', test: s => /^[.\-_\s\/|•·]+$/.test(s.trim()) && /[.\-_]/.test(s), fn: morseDec },
+];
+const FLAG_PREFIXES = ['flag', 'ctf', 'picoctf', 'ctf4b', 'ductf', 'htb', 'thm', 'seccon', 'tsgctf', 'wanictf', 'ricerca', 'kosenctf', 'nitic', 'cpctf', 'tkbctf', 'alpacahack', 'lactf', 'uiuctf', 'csawctf', 'hkcert', 'actf', 'dice', 'hsctf', 'idek', 'sekai', 'irisctf', 'bctf', 'osu'];
+function escRe(t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function knownRe(extra, flags = 'i') { const p = FLAG_PREFIXES.slice(); if (extra) p.unshift(escRe(extra)); return new RegExp('(?:' + p.join('|') + ')\\{', flags); }
+const FLAG_KNOWN = knownRe('');
+const FLAG_SHAPE = /[A-Za-z0-9_]{2,24}\{[^{}\n]{1,300}\}/;
+
+function magic(input, maxDepth = 3, extraFlag) {
+  const known = knownRe(extraFlag);
+  const start = { text: input, path: [], score: printableRatio(input) };
+  const all = [start], seen = new Set([input]), queue = [start];
+  while (queue.length && all.length < 300) {
+    const it = queue.shift();
+    if (it.path.length >= maxDepth) continue;
+    for (const d of DECODERS) {
+      if (!d.test(it.text)) continue;
+      let out; try { out = asText(d.fn(it.text)); } catch (e) { continue; }
+      if (!out || seen.has(out) || out === it.text) continue;
+      seen.add(out);
+      const score = printableRatio(out);
+      if (score < 0.85) continue;
+      const node = { text: out, path: [...it.path, d.name], score };
+      all.push(node); queue.push(node);
+    }
+  }
+  const tweaks = [];
+  for (let k = 1; k < 26; k++) tweaks.push(['シーザー+' + k + (k === 13 ? '(ROT13)' : ''), s => caesar(s, k)]);
+  tweaks.push(['ROT47', rot47], ['逆順', reverse], ['Atbash', atbash]);
+  const results = [];
+  for (const n of all) {
+    const isFlag = known.test(n.text) ? 2 : (FLAG_SHAPE.test(n.text) ? 1 : 0);
+    if (n.path.length) results.push({ ...n, flag: isFlag });
+    else if (isFlag) results.push({ ...n, flag: isFlag });
+    for (const [nm, f] of tweaks) {
+      const t = f(n.text);
+      if (t !== n.text && known.test(t)) results.push({ text: t, path: [...n.path, nm], score: printableRatio(t), flag: 2 });
+    }
+  }
+  const uniq = new Map();
+  for (const r of results) if (!uniq.has(r.text) || uniq.get(r.text).path.length > r.path.length) uniq.set(r.text, r);
+  return [...uniq.values()].sort((a, b) => b.flag - a.flag || b.score - a.score || a.path.length - b.path.length);
+}
+
+/*FCORE_START*/
+// ===== ファイル解析 =====
+const u16be = (b, o) => (b[o] << 8) | b[o + 1];
+const u32be = (b, o) => ((b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3]) >>> 0;
+const u16le = (b, o) => b[o] | (b[o + 1] << 8);
+const u32le = (b, o) => (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) >>> 0;
+const asc = (b, o, n) => latin1(b.subarray(o, o + n));
+function startsHex(b, o, h) { if (o + h.length / 2 > b.length) return false; for (let i = 0; i < h.length / 2; i++) if (b[o + i] !== parseInt(h.substr(i * 2, 2), 16)) return false; return true; }
+
+const SIGS = [
+  ['PNG画像', 'png', '89504e470d0a1a0a'], ['JPEG画像', 'jpg jpeg jfif', 'ffd8ff'], ['GIF画像', 'gif', '474946383961'], ['GIF画像', 'gif', '474946383761'],
+  ['PDF', 'pdf', '255044462d'], ['ZIP圧縮', 'zip docx xlsx pptx jar apk odt epub', '504b0304'], ['ZIP圧縮（空）', 'zip', '504b0506'],
+  ['GZIP圧縮', 'gz tgz', '1f8b08'], ['7z圧縮', '7z', '377abcaf271c'], ['RAR圧縮', 'rar', '526172211a07'], ['XZ圧縮', 'xz', 'fd377a585a00'],
+  ['BZIP2圧縮', 'bz2', '425a6839'], ['ELF実行ファイル（Linuxのプログラム）', ' elf so o out bin', '7f454c46'], ['Javaクラス', 'class', 'cafebabe'],
+  ['pcap（通信の記録）', 'pcap cap', 'd4c3b2a1'], ['pcap（通信の記録）', 'pcap cap', 'a1b2c3d4'], ['pcapng（通信の記録）', 'pcapng', '0a0d0d0a'],
+  ['SQLiteデータベース', 'db sqlite sqlite3', '53514c69746520666f726d6174203300'], ['OGG音声', 'ogg', '4f676753'], ['FLAC音声', 'flac', '664c6143'],
+  ['MP3音声', 'mp3', '494433'], ['MIDI音楽', 'mid midi', '4d546864'], ['Photoshop画像', 'psd', '38425053'], ['BMP画像', 'bmp', '424d'],
+  ['EXE実行ファイル（Windowsのプログラム）', 'exe dll', '4d5a'],
+];
+function detectType(b) {
+  if (asc(b, 0, 4) === 'RIFF') { const k = asc(b, 8, 4); if (k === 'WAVE') return { n: 'WAV音声', ext: ['wav'] }; if (k === 'WEBP') return { n: 'WebP画像', ext: ['webp'] }; if (k === 'AVI ') return { n: 'AVI動画', ext: ['avi'] }; }
+  if (asc(b, 4, 4) === 'ftyp') return { n: 'MP4/MOV動画', ext: ['mp4', 'mov', 'm4a', 'heic'] };
+  if (asc(b, 257, 5) === 'ustar') return { n: 'TARまとめファイル', ext: ['tar'] };
+  for (const [n, e, h] of SIGS) if (startsHex(b, 0, h)) return { n, ext: e.split(' ') };
+  if (b.length && printableRatio(latin1(b.subarray(0, 4096))) > 0.95) return { n: 'テキスト（文字だけのファイル）', ext: ['txt', 'md', 'csv', 'py', 'c', 'js', 'html', 'json', 'log', 'xml', 'sh', ''], text: true };
+  return null;
+}
+const EMBED = [['PNG画像', '89504e470d0a1a0a'], ['JPEG画像', 'ffd8ffe0'], ['JPEG画像', 'ffd8ffe1'], ['JPEG画像', 'ffd8ffdb'], ['JPEG画像', 'ffd8ffee'], ['GIF画像', '474946383961'], ['PDF', '255044462d312e'], ['ZIP圧縮', '504b0304'], ['7z圧縮', '377abcaf271c'], ['RAR圧縮', '526172211a07'], ['GZIP圧縮', '1f8b0800'], ['ELF実行ファイル', '7f454c4602'], ['ELF実行ファイル', '7f454c4601'], ['SQLiteデータベース', '53514c69746520666f726d617420'], ['OGG音声', '4f67675300'], ['FLAC音声', '664c614300']];
+function scanEmbedded(b, selfType) {
+  const hits = [];
+  for (const [n, h] of EMBED) {
+    const f = parseInt(h.substr(0, 2), 16);
+    for (let i = 1; i < b.length && hits.length < 60; i++) {
+      if (b[i] !== f || !startsHex(b, i, h)) continue;
+      hits.push({ off: i, n });
+      if (n === 'ZIP圧縮') break; // ZIPは最初の1つだけ（中のファイルごとに見つかるため）
+    }
+  }
+  if (selfType && selfType.n === 'ZIP圧縮') return hits.filter(h => h.n !== 'ZIP圧縮');
+  return hits.sort((a, c) => a.off - c.off);
+}
+
+// CRC32（PNGのチェック用の数）
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+
+function parsePNG(b) {
+  const r = { chunks: [], texts: [], ztxt: [], ihdr: null, end: null, exif: null };
+  let off = 8;
+  while (off + 12 <= b.length) {
+    const len = u32be(b, off), type = asc(b, off + 4, 4), ds = off + 8;
+    if (!/^[A-Za-z]{4}$/.test(type)) break;
+    if (ds + len + 4 > b.length) { r.chunks.push({ type, len, off, broken: true }); break; }
+    const crcOk = u32be(b, ds + len) === crc32(b.subarray(off + 4, ds + len));
+    r.chunks.push({ type, len, off, crcOk });
+    const d = b.subarray(ds, ds + len);
+    if (type === 'IHDR') r.ihdr = { w: u32be(d, 0), h: u32be(d, 4), crcOk, off };
+    if (type === 'tEXt') { const z = d.indexOf(0); r.texts.push({ key: asc(d, 0, z), val: latin1(d.subarray(z + 1)) }); }
+    if (type === 'zTXt') { const z = d.indexOf(0); r.ztxt.push({ key: asc(d, 0, z), data: d.subarray(z + 2) }); }
+    if (type === 'iTXt') {
+      const z = d.indexOf(0), comp = d[z + 1]; let p = d.indexOf(0, z + 3); p = d.indexOf(0, p + 1);
+      if (comp) r.ztxt.push({ key: asc(d, 0, z), data: d.subarray(p + 1) }); else r.texts.push({ key: asc(d, 0, z), val: bytesToText(d.subarray(p + 1)) });
+    }
+    if (type === 'eXIf') r.exif = parseTIFF(b, ds, ds + len);
+    off = ds + len + 4;
+    if (type === 'IEND') { r.end = off; break; }
+  }
+  return r;
+}
+// IHDRのCRCが合わない → 幅や高さが書き換えられている問題。正しい値を探す
+function fixIHDR(b, ihdr) {
+  const body = b.slice(ihdr.off + 4, ihdr.off + 21), want = u32be(b, ihdr.off + 21);
+  const tryWH = (w, h) => { body[5] = w >>> 16 & 255; body[6] = w >>> 8 & 255; body[7] = w & 255; body[4] = w >>> 24; body[9] = h >>> 16 & 255; body[10] = h >>> 8 & 255; body[11] = h & 255; body[8] = h >>> 24; return crc32(body) === want; };
+  let found = null;
+  for (let h = 1; h <= 10000 && !found; h++) if (tryWH(ihdr.w, h)) found = [ihdr.w, h];
+  for (let w = 1; w <= 10000 && !found; w++) if (tryWH(w, ihdr.h)) found = [w, ihdr.h];
+  for (let w = 1; w <= 2000 && !found; w++) for (let h = 1; h <= 2000; h++) if (tryWH(w, h)) { found = [w, h]; break; }
+  if (!found) return null;
+  const out = b.slice(); tryWH(found[0], found[1]); out.set(body, ihdr.off + 4);
+  return { w: found[0], h: found[1], bytes: out };
+}
+
+const TIFF_TAGS = { 0x010e: '画像の説明 (ImageDescription)', 0x010f: 'カメラのメーカー (Make)', 0x0110: 'カメラの機種 (Model)', 0x0131: 'ソフト (Software)', 0x0132: '更新日時 (DateTime)', 0x013b: '作者 (Artist)', 0x8298: '著作権 (Copyright)', 0x9003: '撮影日時 (DateTimeOriginal)', 0x9286: 'コメント (UserComment)', 0x9c9b: 'タイトル (XPTitle)', 0x9c9c: 'コメント (XPComment)', 0x9c9d: '作者 (XPAuthor)', 0x9c9e: 'キーワード (XPKeywords)', 0x9c9f: '件名 (XPSubject)', 0xa430: 'カメラの持ち主 (CameraOwnerName)', 0xa431: 'カメラの製造番号 (BodySerialNumber)', 0xa420: '画像ID (ImageUniqueID)', 0x010d: 'ドキュメント名 (DocumentName)' };
+function parseTIFF(b, base, limit) {
+  const tags = [], gps = {};
+  try {
+    const le = b[base] === 0x49, r16 = o => le ? u16le(b, o) : u16be(b, o), r32 = o => le ? u32le(b, o) : u32be(b, o);
+    const SZ = { 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8 };
+    const seen = new Set();
+    const walk = (ifd, kind) => {
+      if (!ifd || seen.has(ifd) || base + ifd + 2 > limit) return; seen.add(ifd);
+      const p = base + ifd, n = r16(p);
+      for (let i = 0; i < n && i < 300; i++) {
+        const e = p + 2 + i * 12, tag = r16(e), type = r16(e + 2), cnt = r32(e + 4), tot = (SZ[type] || 1) * cnt;
+        const doff = tot <= 4 ? e + 8 : base + r32(e + 8);
+        if (doff + tot > limit) continue;
+        const d = b.subarray(doff, doff + tot);
+        if (kind === 'gps') {
+          if (tag === 1 || tag === 3) gps[tag] = asc(d, 0, 1);
+          if ((tag === 2 || tag === 4) && type === 5) { const v = [0, 1, 2].map(k => r32(doff + k * 8) / (r32(doff + k * 8 + 4) || 1)); gps[tag] = v[0] + v[1] / 60 + v[2] / 3600; }
+          continue;
+        }
+        if (tag === 0x8769) { walk(r32(e + 8), 'exif'); continue; }
+        if (tag === 0x8825) { walk(r32(e + 8), 'gps'); continue; }
+        let val = null;
+        if (type === 2) val = latin1(d).replace(/\0+$/, '');
+        else if (tag >= 0x9c9b && tag <= 0x9c9f) val = new TextDecoder('utf-16le').decode(d).replace(/\0+$/, '');
+        else if (tag === 0x9286) val = (asc(d, 0, 7) === 'UNICODE' ? new TextDecoder(le ? 'utf-16le' : 'utf-16be').decode(d.subarray(8)) : bytesToText(d.subarray(8))).replace(/\0+$/, '');
+        else if (type === 7 && cnt > 4 && cnt < 2000 && printableRatio(latin1(d)) > 0.9) val = latin1(d);
+        if (val && val.trim()) tags.push({ name: TIFF_TAGS[tag] || 'タグ 0x' + tag.toString(16), val: val.trim() });
+      }
+      if (kind === 'ifd0') walk(r32(p + 2 + n * 12), 'ifd1');
+    };
+    walk(r32(base + 4), 'ifd0');
+  } catch (e) { }
+  let pos = null;
+  if (gps[2] != null && gps[4] != null) pos = { lat: gps[2] * (gps[1] === 'S' ? -1 : 1), lon: gps[4] * (gps[3] === 'W' ? -1 : 1) };
+  return { tags, gps: pos };
+}
+function parseJPEG(b) {
+  const r = { comments: [], exif: null, xmp: null, end: null };
+  let off = 2;
+  while (off + 4 <= b.length) {
+    if (b[off] !== 0xff) break;
+    const m = b[off + 1];
+    if (m === 0xff) { off++; continue; }
+    if (m === 0xd8 || m === 0x01 || (m >= 0xd0 && m <= 0xd7)) { off += 2; continue; }
+    if (m === 0xd9) { r.end = off + 2; break; }
+    const len = u16be(b, off + 2), s = off + 4, e = off + 2 + len;
+    if (e > b.length) break;
+    if (m === 0xfe) r.comments.push(bytesToText(b.subarray(s, e)));
+    if (m === 0xe1 && asc(b, s, 6) === 'Exif\0\0') r.exif = parseTIFF(b, s + 6, e);
+    else if (m === 0xe1 && asc(b, s, 20).startsWith('http://ns.adobe.com/')) r.xmp = bytesToText(b.subarray(s, e));
+    off = e;
+    if (m === 0xda) {
+      let p = off;
+      while (p + 1 < b.length) { if (b[p] === 0xff) { const n = b[p + 1]; if (n === 0 || (n >= 0xd0 && n <= 0xd7)) { p += 2; continue; } if (n === 0xff) { p++; continue; } break; } p++; }
+      off = p;
+    }
+  }
+  return r;
+}
+function parseZip(b) {
+  const r = { entries: [], comment: '', end: null };
+  let eocd = -1;
+  for (let i = b.length - 22; i >= Math.max(0, b.length - 65557); i--) if (b[i] === 0x50 && u32le(b, i) === 0x06054b50) { eocd = i; break; }
+  if (eocd >= 0) {
+    const n = u16le(b, eocd + 10), cd = u32le(b, eocd + 16), cl = u16le(b, eocd + 20);
+    r.comment = bytesToText(b.subarray(eocd + 22, eocd + 22 + cl)); r.end = eocd + 22 + cl;
+    let p = cd;
+    for (let k = 0; k < n && p + 46 <= b.length && u32le(b, p) === 0x02014b50; k++) {
+      const nl = u16le(b, p + 28), el = u16le(b, p + 30), cml = u16le(b, p + 32), lho = u32le(b, p + 42);
+      const ent = { name: bytesToText(b.subarray(p + 46, p + 46 + nl)), flags: u16le(b, p + 8), method: u16le(b, p + 10), csize: u32le(b, p + 20), usize: u32le(b, p + 24), comment: bytesToText(b.subarray(p + 46 + nl + el, p + 46 + nl + el + cml)) };
+      if (lho + 30 <= b.length && u32le(b, lho) === 0x04034b50) ent.dataOff = lho + 30 + u16le(b, lho + 26) + u16le(b, lho + 28);
+      r.entries.push(ent); p += 46 + nl + el + cml;
+    }
+  }
+  if (!r.entries.length || r.entries.some(e => e.dataOff == null)) {
+    r.entries = []; let p = 0;
+    while (p + 30 <= b.length && u32le(b, p) === 0x04034b50 && r.entries.length < 500) {
+      const nl = u16le(b, p + 26), el = u16le(b, p + 28);
+      const ent = { name: bytesToText(b.subarray(p + 30, p + 30 + nl)), flags: u16le(b, p + 6), method: u16le(b, p + 8), csize: u32le(b, p + 18), usize: u32le(b, p + 22), dataOff: p + 30 + nl + el, comment: '' };
+      r.entries.push(ent);
+      if ((ent.flags & 8) && !ent.csize) break;
+      p = ent.dataOff + ent.csize;
+    }
+  }
+  r.entries.forEach(e => { e.encrypted = !!(e.flags & 1); e.dir = e.name.endsWith('/'); });
+  return r;
+}
+async function inflate(data, fmt) {
+  if (typeof DecompressionStream === 'undefined') return null;
+  const ds = new DecompressionStream(fmt), w = ds.writable.getWriter();
+  w.write(data).catch(() => { }); w.close().catch(() => { });
+  const rd = ds.readable.getReader(), parts = []; let tot = 0;
+  try { for (; ;) { const { done, value } = await rd.read(); if (done) break; parts.push(value); tot += value.length; if (tot > 50e6) { rd.cancel().catch(() => { }); break; } } }
+  catch (e) { if (!parts.length) return null; }
+  const out = new Uint8Array(tot); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}
+async function zipExtract(b, e) {
+  if (e.encrypted || e.dir || e.dataOff == null) return null;
+  const d = b.subarray(e.dataOff, e.dataOff + e.csize);
+  if (e.method === 0) return d;
+  if (e.method === 8) return inflate(d, 'deflate-raw');
+  return null;
+}
+function typeEnd(b, t) {
+  if (!t) return null;
+  if (t.n === 'PNG画像') return parsePNG(b).end;
+  if (t.n === 'JPEG画像') return parseJPEG(b).end;
+  if (t.n.startsWith('ZIP')) return parseZip(b).end;
+  if (t.n === 'PDF') { const s = latin1(b.subarray(Math.max(0, b.length - 4096))); const i = s.lastIndexOf('%%EOF'); if (i < 0) return null; let e = b.length - s.length + i + 5; while (e < b.length && (b[e] === 10 || b[e] === 13)) e++; return e; }
+  return null;
+}
+async function pdfStreams(b) {
+  const s = latin1(b), out = []; const re = /stream\r?\n/g; let m;
+  while ((m = re.exec(s)) && out.length < 300) {
+    const st = m.index + m[0].length, en = s.indexOf('endstream', st); if (en < 0) break;
+    const dict = s.slice(Math.max(0, m.index - 300), m.index);
+    const raw = b.subarray(st, en);
+    const d = /FlateDecode/.test(dict.slice(dict.lastIndexOf('<<'))) ? await inflate(raw, 'deflate') : raw;
+    if (d && d.length) out.push(d);
+    re.lastIndex = en;
+  }
+  return out;
+}
+function extractStrings(b, min = 4, cap = 20000) {
+  const out = []; let st = -1;
+  for (let i = 0; i <= b.length; i++) {
+    const c = b[i], ok = i < b.length && ((c >= 32 && c < 127) || c === 9);
+    if (ok) { if (st < 0) st = i; } else { if (st >= 0 && i - st >= min) { out.push({ off: st, s: latin1(b.subarray(st, i)) }); if (out.length >= cap) break; } st = -1; }
+  }
+  // UTF-16（Windowsでよく使う文字の形）
+  st = -1;
+  for (let i = 0; i + 1 <= b.length && out.length < cap; i += 2) {
+    const ok = i + 1 < b.length && b[i + 1] === 0 && b[i] >= 32 && b[i] < 127;
+    if (ok) { if (st < 0) st = i; } else { if (st >= 0 && (i - st) / 2 >= min) out.push({ off: st, s: new TextDecoder('utf-16le').decode(b.subarray(st, i)), u16: true }); st = -1; }
+  }
+  return out;
+}
+function xorPrefixScan(b, extra) {
+  const pre = ['flag{', 'FLAG{', 'ctf{', 'CTF{', 'picoCTF{', 'ctf4b{', 'Flag{']; if (extra) pre.push(extra + '{');
+  const found = [], seen = new Set();
+  for (const p of pre) {
+    const pb = toBytes(p);
+    for (let i = 0; i + pb.length < b.length && found.length < 20; i++) {
+      const k = b[i] ^ pb[0]; if (!k) continue;
+      let j = 1; while (j < pb.length && (b[i + j] ^ k) === pb[j]) j++;
+      if (j < pb.length) continue;
+      let e = i + j; while (e < b.length && e - i < 300 && (b[e] ^ k) !== 0x7d) e++;
+      if (e >= b.length || (b[e] ^ k) !== 0x7d) continue;
+      const f = latin1(Uint8Array.from(b.subarray(i, e + 1), x => x ^ k));
+      if (printableRatio(f) < 1 || seen.has(f)) continue;
+      seen.add(f); found.push({ flag: f, key: k });
+    }
+  }
+  return found;
+}
+function lsbVariants(px, w, h, maxBytes = 1 << 18) {
+  let alphaUsed = false; for (let i = 3; i < px.length; i += 4) if (px[i] !== 255) { alphaUsed = true; break; }
+  const CH = { RGB: [0, 1, 2], BGR: [2, 1, 0], R: [0], G: [1], B: [2] };
+  if (alphaUsed) { CH.RGBA = [0, 1, 2, 3]; CH.A = [3]; }
+  const res = [], N = w * h;
+  for (const name in CH) for (const bit of [0, 1]) for (const msb of [true, false]) {
+    const ch = CH[name], nb = Math.min(maxBytes, Math.floor(N * ch.length / 8)), out = new Uint8Array(nb);
+    let idx = 0, cur = 0, bi = 0;
+    outer: for (let p = 0; p < N; p++) for (const c of ch) {
+      const v = (px[p * 4 + c] >> bit) & 1;
+      if (msb) cur = (cur << 1) | v; else cur |= v << bi;
+      if (++bi === 8) { out[idx++] = cur; cur = 0; bi = 0; if (idx >= nb) break outer; }
+    }
+    res.push({ name: `${name} の 第${bit}ビット（${msb ? '上の桁から' : '下の桁から'}）`, bytes: out });
+  }
+  return res;
+}
+function hexdump(b, start = 0, len = 512) {
+  const lines = [];
+  for (let o = start; o < Math.min(b.length, start + len); o += 16) {
+    const row = b.subarray(o, Math.min(o + 16, b.length));
+    const hx = [...row].map(x => x.toString(16).padStart(2, '0')).join(' ').padEnd(47, ' ');
+    lines.push(o.toString(16).padStart(8, '0') + '  ' + hx + '  |' + [...row].map(x => x >= 32 && x < 127 ? String.fromCharCode(x) : '.').join('') + '|');
+  }
+  return lines.join('\n');
+}
+function hintsFor(t, rep) {
+  const H = [];
+  const n = t ? t.n : '';
+  if (n.startsWith('ZIP') && rep.zip && rep.zip.entries.some(e => e.encrypted)) H.push('パスワード付きZIPです。John the Ripper（パスワードを総当たりするツール）の zip2john や、fcrackzip で辞書攻撃（よくあるパスワードを順番に試すこと）をしてみよう。問題文や画像の中にパスワードのヒントがあることも多いです。');
+  if (n === 'JPEG画像') H.push('JPEGは steghide（画像にデータを隠すツール）がよく使われます。パソコンで「steghide extract -sf ファイル名」を実行して、パスワードを聞かれたら何も入れずにEnterを押してみよう。');
+  if (n === 'PNG画像' || n === 'BMP画像') H.push('下の「ビットプレーン」で R/G/B の0ビット目を順番に見てみよう。文字やQRコードが浮かんでくることがあります。パソコンなら zsteg（PNGの隠しデータを探すツール）も便利です。');
+  if (/画像/.test(n)) H.push('画像の明るさやコントラストを極端に変えると、うっすら書かれた文字が見えることがあります。');
+  if (/音声/.test(n)) H.push('音声ファイルは Audacity や Sonic Visualiser で「スペクトログラム」（音を色の絵として表示する方法）を見てみよう。文字が描かれていたり、モールス信号やSSTV（音で画像を送る方式）のことがあります。');
+  if (/pcap/.test(n)) H.push('通信の記録です。Wireshark（通信を見るツール）で開いて、「統計 → プロトコル階層」で何の通信が多いか見よう。「ファイル → オブジェクトをエクスポート → HTTP」で送られたファイルを取り出せます。');
+  if (/実行ファイル|Java/.test(n)) H.push('プログラムのファイルです。Ghidra（機械語を読める形に戻すツール）で開いて main 関数を読もう。Linuxなら ltrace / strace で、動かしながら何をしているか見る方法もあります。');
+  if (n === 'PDF') H.push('PDFは黒塗りの下に文字が残っていることがあります。全部選択してコピーし、メモ帳に貼ってみよう。');
+  if (n === 'SQLiteデータベース') H.push('DB Browser for SQLite で開いて、全部のテーブル（表）を見てみよう。');
+  if (!t) H.push('種類がわかりませんでした。ファイルの先頭のマジックナンバー（ファイルの種類を表す最初の数バイト）が壊されているか、XORなどで全体が暗号化されているかもしれません。下の16進ダンプで先頭を見てみよう。');
+  if (rep.extMismatch) H.push('拡張子（ファイル名の最後の .png など）と中身がちがいます。拡張子を正しいものに変えると開けるかもしれません。');
+  return H;
+}
+
+// ---- 全体の解析 ----
+const STR_CAND = /^[A-Za-z0-9+/=_\-]{12,4000}$|^[01\s]{16,}$|%[0-9a-fA-F]{2}|\\u[0-9a-fA-F]{4}|&#\d+;|^[.\-\s\/]{10,}$/;
+const TWEAKS = [...Array.from({ length: 25 }, (_, i) => ['シーザー+' + (i + 1) + (i === 12 ? '(ROT13)' : ''), s => caesar(s, i + 1)]), ['ROT47', rot47], ['逆順', reverse], ['Atbash', atbash]];
+
+function addFlag(ctx, flag, where, how) {
+  flag = flag.trim(); if (!flag) return;
+  let f = ctx.flags.get(flag); if (!f) { f = { flag, ways: [] }; ctx.flags.set(flag, f); }
+  const w = where + ' ／ ' + how; if (!f.ways.includes(w) && f.ways.length < 6) f.ways.push(w);
+}
+function searchText(ctx, text, where, how) {
+  const re = knownRe(ctx.extra, 'gi'); re.lastIndex = 0;
+  const reFull = new RegExp(re.source + '[^{}\\n\\r]{0,300}\\}', 'gi');
+  for (const m of text.matchAll(reFull)) addFlag(ctx, m[0], where, how);
+  if (ctx.like.size < 30) for (const m of text.matchAll(new RegExp(FLAG_SHAPE.source, 'g'))) { if (!knownRe(ctx.extra).test(m[0]) && printableRatio(m[0]) === 1) ctx.like.set(m[0], where); if (ctx.like.size >= 30) break; }
+}
+function deepText(ctx, s, where, label) {
+  // 1つの文字列を、そのまま・ずらし・自動解析でチェック
+  searchText(ctx, s, where, label);
+  const kr = knownRe(ctx.extra);
+  if (s.includes('{') && s.includes('}')) for (const [nm, f] of TWEAKS) { const t = f(s); if (kr.test(t)) searchText(ctx, t, where, label + ' → ' + nm); }
+  const c = s.trim();
+  if (c.length >= 8 && c.length <= 6000 && STR_CAND.test(c) && ctx.magicCount++ < 1500) {
+    for (const r of magic(c, 3, ctx.extra)) if (r.flag === 2 && r.path.length) searchText(ctx, r.text, where, label + ' → ' + r.path.join(' → '));
+  }
+}
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+async function analyzeBytes(b, name, ctx, depth = 0, where = '', quiet = false) {
+  where = where || name;
+  const rep = { name, where, size: b.length, bytes: b, depth };
+  if (!quiet) ctx.reports.push(rep);
+  ctx.progress && ctx.progress(`${where} を調べています…`); await tick();
+  const t = rep.type = detectType(b);
+  const ext = (name.match(/\.([A-Za-z0-9]+)$/) || [, ''])[1].toLowerCase();
+  if (t && !t.text && ext && !t.ext.includes(ext)) rep.extMismatch = `拡張子は .${ext} なのに、中身は「${t.n}」です`;
+
+  // 1. そのまま・UTF-16・逆さま
+  const raw = latin1(b);
+  searchText(ctx, raw, where, 'ファイルにそのまま書いてあった');
+  searchText(ctx, new TextDecoder('utf-16le').decode(b), where, 'UTF-16（2バイトずつの文字）で書いてあった');
+  searchText(ctx, raw.split('').reverse().join(''), where, '逆さまに書いてあった');
+  if (t && t.text) searchText(ctx, bytesToText(b), where, 'テキストとして読んだ');
+  // 2. strings
+  rep.strings = extractStrings(b);
+  for (const s of rep.strings) deepText(ctx, s.s, where, `文字列（${s.off.toString(16)}番地）`);
+  if (t && t.text && b.length < 200000) deepText(ctx, bytesToText(b).trim(), where, 'ファイル全体');
+  await tick();
+  // 3. XOR
+  if (b.length <= 4e6) for (const x of xorPrefixScan(b, ctx.extra)) addFlag(ctx, x.flag, where, `全体が XOR されていた（鍵 0x${x.key.toString(16).padStart(2, '0')}）`);
+
+  const nested = new Map(); // off -> {bytes, label}
+  const texts = [];
+  // 4. 種類ごと
+  if (t && t.n === 'PNG画像') {
+    const p = rep.png = parsePNG(b);
+    p.texts.forEach(x => texts.push([x.key + ' (PNGのテキスト)', x.val]));
+    for (const z of p.ztxt) { const d = await inflate(z.data, 'deflate'); if (d) { const v = bytesToText(d); p.texts.push({ key: z.key + '（圧縮されていた）', val: v }); texts.push([z.key + ' (PNGの圧縮テキスト)', v]); } }
+    if (p.exif) { rep.exif = p.exif; p.exif.tags.forEach(x => texts.push([x.name, x.val])); }
+    if (p.ihdr && !p.ihdr.crcOk) { ctx.progress && ctx.progress('画像の正しい大きさを計算しています…'); await tick(); rep.ihdrFix = fixIHDR(b, p.ihdr); }
+    if (p.chunks.some(c => c.type === 'IDAT')) rep.image = 'image/png';
+  }
+  if (t && t.n === 'JPEG画像') {
+    const j = rep.jpeg = parseJPEG(b);
+    j.comments.forEach(c => texts.push(['JPEGのコメント', c]));
+    if (j.exif) { rep.exif = j.exif; j.exif.tags.forEach(x => texts.push([x.name, x.val])); }
+    if (j.xmp) texts.push(['XMP（画像の追加情報）', j.xmp]);
+    rep.image = 'image/jpeg';
+  }
+  if (t && /GIF|BMP|WebP/.test(t.n)) rep.image = t.n.startsWith('GIF') ? 'image/gif' : t.n.startsWith('BMP') ? 'image/bmp' : 'image/webp';
+  // 先頭が壊れたPNG/JPEGを直す
+  if (!t || !/画像/.test(t.n)) {
+    if (asc(b, 12, 4) === 'IHDR' && !startsHex(b, 0, '89504e470d0a1a0a')) { const f = b.slice(); f.set(hexDec('89504e470d0a1a0a'), 0); rep.headerFix = 'PNG'; nested.set(-1, { bytes: f, label: '先頭を直したPNG画像', name: 'fixed.png' }); }
+    else if (/JFIF|Exif/.test(asc(b, 6, 4)) && !startsHex(b, 0, 'ffd8')) { const f = b.slice(); f[0] = 0xff; f[1] = 0xd8; rep.headerFix = 'JPEG'; nested.set(-1, { bytes: f, label: '先頭を直したJPEG画像', name: 'fixed.jpg' }); }
+  }
+  if (t && t.n.startsWith('ZIP')) {
+    const z = rep.zip = parseZip(b);
+    if (z.comment) texts.push(['ZIPのコメント', z.comment]);
+    z.entries.forEach(e => { if (e.comment) texts.push([e.name + ' のコメント', e.comment]); });
+    if (depth < 4) for (const e of z.entries.slice(0, 80)) {
+      if (e.encrypted) continue;
+      const d = await zipExtract(b, e); e.ok = !!d;
+      if (d && d.length) nested.set('zip:' + e.name, { bytes: d, label: 'ZIPの中の ' + e.name, name: e.name.split('/').pop() });
+    }
+  }
+  if (t && t.n === 'GZIP圧縮' && depth < 4) { const d = await inflate(b, 'gzip'); if (d) { const fn = name.replace(/\.t?gz$/i, '') || 'gunzip'; nested.set('gz', { bytes: d, label: 'GZIPを解凍した中身', name: /\.tgz$/i.test(name) ? fn + '.tar' : fn }); } }
+  if (t && t.n === 'TARまとめファイル' && depth < 4) {
+    let p = 0; rep.tar = [];
+    while (p + 512 <= b.length && b[p]) { const nm = asc(b, p, 100).replace(/\0.*$/, ''), sz = parseInt(asc(b, p + 124, 12).replace(/\0.*$/, '').trim() || '0', 8) || 0; rep.tar.push({ name: nm, size: sz }); if (sz && asc(b, p + 156, 1) !== '5') nested.set('tar:' + nm, { bytes: b.subarray(p + 512, p + 512 + sz), label: 'TARの中の ' + nm, name: nm.split('/').pop() }); p += 512 + Math.ceil(sz / 512) * 512; if (rep.tar.length > 200) break; }
+  }
+  if (t && t.n === 'PDF') {
+    const st = await pdfStreams(b); rep.pdfStreams = st.length;
+    for (let i = 0; i < st.length; i++) await analyzeBytes(st[i], `stream${i}`, ctx, depth + 1, `${where} の中のデータ${i + 1}`, true);
+  }
+  for (const [k, v] of texts) deepText(ctx, v, where, k);
+  rep.texts = texts;
+  // 5. 後ろにくっついたデータ・中に隠れたファイル
+  const end = typeEnd(b, t);
+  if (end && end < b.length) { rep.trailing = { off: end, len: b.length - end }; if (depth < 4) nested.set(end, { bytes: b.subarray(end), label: `ファイルの後ろにくっついていたデータ（${end.toString(16)}番地から）`, name: 'trailing.bin' }); }
+  rep.embedded = scanEmbedded(b, t).filter(h => !(t && t.n === 'JPEG画像' && h.n === 'JPEG画像' && rep.jpeg && rep.jpeg.end && h.off < rep.jpeg.end));
+  if (depth < 4) for (const h of rep.embedded.slice(0, 20)) {
+    if (nested.has(h.off)) { nested.get(h.off).label += `（${h.n}）`; continue; }
+    const sub = b.subarray(h.off), e2 = typeEnd(sub, { n: h.n });
+    nested.set(h.off, { bytes: e2 ? sub.subarray(0, e2) : sub, label: `${h.off.toString(16)}番地に隠れていた${h.n}`, name: 'hidden.' + ({ 'PNG画像': 'png', 'JPEG画像': 'jpg', 'ZIP圧縮': 'zip', 'GIF画像': 'gif', 'PDF': 'pdf', 'GZIP圧縮': 'gz' }[h.n] || 'bin') });
+  }
+  if (rep.ihdrFix) nested.set('ihdr', { bytes: rep.ihdrFix.bytes, label: `大きさを直したPNG（${rep.ihdrFix.w}×${rep.ihdrFix.h}）`, name: 'fixed.png' });
+  rep.hints = hintsFor(t, rep);
+  for (const [, v] of nested) {
+    if (ctx.reports.length > 60 || ctx.total > 200e6) break;
+    ctx.total += v.bytes.length;
+    await analyzeBytes(v.bytes, v.name, ctx, depth + 1, `${where} → ${v.label}`);
+  }
+  return rep;
+}
+function lsbCheck(ctx, rep, px, w, h) {
+  const out = [];
+  for (const v of lsbVariants(px, w, h)) {
+    const s = latin1(v.bytes);
+    searchText(ctx, s, rep.where, 'LSB（色の一番下のビットに隠す方法）: ' + v.name);
+    const head = s.match(/^[\x20-\x7e\t\r\n]{8,}/);
+    if (head) { out.push({ name: v.name, text: head[0].slice(0, 2000) }); deepText(ctx, head[0].slice(0, 6000), rep.where, 'LSB: ' + v.name); }
+  }
+  return out;
+}
+function cleanLike(ctx) {
+  const kr = knownRe(ctx.extra);
+  for (const k of [...ctx.like.keys()]) if (TWEAKS.some(([, f]) => kr.test(f(k)))) ctx.like.delete(k);
+}
+async function analyzeFile(b, name, extra, progress) {
+  const ctx = { flags: new Map(), like: new Map(), reports: [], extra, progress, magicCount: 0, total: b.length };
+  await analyzeBytes(b, name, ctx);
+  return ctx;
+}
+
+
+// ===== 画面まわり =====
+const $ = id => document.getElementById(id);
+function el(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in props) { if (k === 'class') e.className = props[k]; else if (k === 'text') e.textContent = props[k]; else e.setAttribute(k, props[k]); }
+  for (const c of kids) if (c != null) e.append(c);
+  return e;
+}
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1400); }
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); toast('コピーしました'); }
+  catch (e) { toast('コピーできませんでした。長押しで選んでね'); }
+}
+function resultBox(text, { meta = [], cls = '' } = {}) {
+  const pre = el('pre', { text: showable(text) });
+  const btn = el('button', { class: 'copy', text: 'コピー', type: 'button' });
+  btn.addEventListener('click', () => copyText(text));
+  const m = meta.length ? el('div', { class: 'meta' }, ...meta) : null;
+  return el('div', { class: 'res ' + cls }, btn, m, pre);
+}
+const chip = t => el('span', { class: 'chip', text: t });
+const badge = (t, g) => el('span', { class: 'badge' + (g ? ' g' : ''), text: t });
+function showErr(box, e) { box.replaceChildren(el('div', { class: 'err', text: '⚠ ' + (e && e.message ? e.message : e) })); }
+
+// タブ
+const sections = [...document.querySelectorAll('section')];
+function openTab(id) {
+  sections.forEach(s => s.classList.toggle('on', s.id === id));
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.id === id));
+  try { localStorage.setItem('ctf-tab', id); } catch (e) {}
+}
+sections.forEach(s => {
+  const b = el('button', { class: 'tab', role: 'tab', type: 'button', text: s.dataset.name });
+  b.dataset.id = s.id; b.addEventListener('click', () => { openTab(s.id); if (location.hash !== '#' + s.id) history.replaceState(null, '', '#' + s.id); });
+  $('tabs').append(b);
+});
+function initTab() {
+  const h = location.hash.slice(1); let saved = null;
+  try { saved = localStorage.getItem('ctf-tab'); } catch (e) {}
+  openTab(sections.some(s => s.id === h) ? h : (sections.some(s => s.id === saved) ? saved : 'file'));
+}
+window.addEventListener('hashchange', initTab); initTab();
+
+// ----- 自動解析 -----
+$('mEx').addEventListener('click', () => { $('mIn').value = b64Enc(hexEnc(rot13('flag{welcome_to_ctf}'))); });
+$('mRun').addEventListener('click', () => {
+  const box = $('mOut'); const s = $('mIn').value.trim();
+  if (!s) return showErr(box, '文字列を入れてね');
+  const r = magic(s, +$('mDepth').value, $('mFlag').value.trim().replace(/\{$/, ''));
+  box.replaceChildren();
+  if (!r.length) { box.append(el('div', { class: 'err', text: '読める結果が見つかりませんでした。XORやヴィジュネルなど、鍵が必要な暗号かもしれません。' })); return; }
+  const flags = r.filter(x => x.flag).length;
+  box.append(el('div', { class: 'note', text: `${r.length}件の候補が見つかりました` + (flags ? `（うちフラグっぽいもの ${flags}件）` : '') }));
+  r.slice(0, 40).forEach(x => {
+    const meta = [];
+    if (x.flag === 2) meta.push(badge('FLAG'));
+    else if (x.flag === 1) meta.push(badge('フラグっぽい形'));
+    if (x.path.length) x.path.forEach((p, i) => { if (i) meta.push(document.createTextNode('→')); meta.push(chip(p)); });
+    else meta.push(chip('そのまま'));
+    meta.push(el('span', { text: ` 読める率 ${Math.round(x.score * 100)}%` }));
+    box.append(resultBox(x.text, { meta, cls: x.flag ? 'flag' : '' }));
+  });
+});
+
+// ----- 変換 -----
+const OPS = {
+  b64: ['Base64', b64Dec, b64Enc, 'A〜Z, a〜z, 0〜9, +, / の64種類の文字と、最後の = が目印。CTFで一番よく見ます。'],
+  b32: ['Base32', b32Dec, b32Enc, '大文字のA〜Zと2〜7だけ。最後に = がたくさん付くことが多いです。'],
+  b58: ['Base58', b58Dec, b58Enc, 'まぎらわしい 0 O I l を使わない方式。ビットコインのアドレスなどで使われます。'],
+  hex: ['16進数 (Hex)', hexDec, hexEnc, '0〜9とa〜fだけ。2文字で1文字（1バイト）を表します。例: 66 = f'],
+  bin: ['2進数', binDec, binEnc, '0と1だけ。8けたで1文字です。例: 01100110 = f'],
+  oct: ['8進数', octDec, octEnc, '0〜7だけ。3けたで1文字です。例: 146 = f'],
+  dec: ['10進数（文字コード）', decDec, decEnc, '文字の番号（文字コード）を並べたもの。例: 102 = f'],
+  url: ['URLエンコード', urlDec, urlEnc, '%と16進数2けたの形。URL（Webのアドレス）に記号を入れるときに使います。'],
+  html: ['HTMLエンティティ', htmlDec, htmlEnc, '&#102; や &lt; のような形。Webページで記号を表すのに使います。'],
+  uni: ['Unicodeエスケープ', uniDec, uniEnc, '\\u0066 や \\x66 のような形。プログラムの中でよく見ます。'],
+  morse: ['モールス信号', morseDec, morseEnc, '. と - の組み合わせ。文字の区切りはスペース、単語の区切りは / です。'],
+  rot13: ['ROT13', rot13, rot13, 'アルファベットを13ずらす。2回やると元に戻るので、デコードもエンコードも同じです。'],
+  rot47: ['ROT47', rot47, rot47, '記号や数字もふくめて47ずらす。これも2回で元に戻ります。'],
+  atbash: ['Atbash', atbash, atbash, 'A↔Z、B↔Y のように、アルファベットを逆さまに入れかえる暗号です。'],
+  rev: ['逆順', reverse, reverse, '文字の順番を反対にします。'],
+};
+for (const k in OPS) $('cOp').append(el('option', { value: k, text: OPS[k][0] }));
+let lastConv = null, convSteps = [];
+const descUpdate = () => { $('cDesc').textContent = '💡 ' + OPS[$('cOp').value][3]; };
+$('cOp').addEventListener('change', descUpdate); descUpdate();
+function runConv(isDec) {
+  const box = $('cOut'); const op = OPS[$('cOp').value];
+  try {
+    const out = asText((isDec ? op[1] : op[2])($('cIn').value));
+    lastConv = { text: out, step: op[0] + (isDec ? ' デコード' : ' エンコード') };
+    box.replaceChildren(resultBox(out, { meta: [chip(lastConv.step), el('span', { text: ` 読める率 ${Math.round(printableRatio(out) * 100)}%` })], cls: FLAG_SHAPE.test(out) ? 'flag' : '' }));
+  } catch (e) { showErr(box, e); lastConv = null; }
+}
+$('cDec').addEventListener('click', () => runConv(true));
+$('cEnc').addEventListener('click', () => runConv(false));
+$('cChain').addEventListener('click', () => {
+  if (!lastConv) return toast('先に変換してね');
+  $('cIn').value = lastConv.text; convSteps.push(lastConv.step); lastConv = null; $('cOut').replaceChildren();
+  $('cSteps').textContent = 'ここまでの手順: ' + convSteps.join(' → ');
+});
+$('cReset').addEventListener('click', () => { convSteps = []; $('cSteps').textContent = ''; });
+
+// ----- シーザー -----
+$('kRun').addEventListener('click', () => {
+  const s = $('kIn').value; const box = $('kOut');
+  if (!s.trim()) return showErr(box, '暗号文を入れてね');
+  const f = letterFreq(s), mx = Math.max(1, ...f);
+  $('kFreq').replaceChildren(
+    el('label', { text: '頻度分析（文字の出てくる回数）' }),
+    el('div', { class: 'freq' }, ...f.map(v => { const d = el('div', { title: v + '回' }); d.style.height = (v / mx * 100) + '%'; return d; })),
+    el('div', { class: 'freqL' }, ...'abcdefghijklmnopqrstuvwxyz'.split('').map(c => el('span', { text: c })))
+  );
+  const rows = []; for (let k = 1; k < 26; k++) { const t = caesar(s, k); rows.push({ k, t, sc: englishScore(t) }); }
+  const best = rows.reduce((a, b) => a.sc < b.sc ? a : b);
+  box.replaceChildren(...rows.map(r => {
+    const meta = [chip(`+${r.k}ずらす` + (r.k === 13 ? ' (ROT13)' : '') + ` / 戻すなら -${26 - r.k}`)];
+    const isF = FLAG_KNOWN.test(r.t); if (isF) meta.unshift(badge('FLAG'));
+    if (r === best) meta.unshift(badge('英語っぽい', true));
+    return resultBox(r.t, { meta, cls: isF ? 'flag' : (r === best ? 'best' : '') });
+  }));
+});
+
+// ----- XOR -----
+function xorScore(b) { let g = 0; for (const x of b) if ((x >= 32 && x < 127) || x === 10 || x === 13 || x === 9) g++; return b.length ? g / b.length : 0; }
+$('xRun').addEventListener('click', () => {
+  const box = $('xOut');
+  try {
+    const data = parseByInput($('xIn').value, $('xFmt').value);
+    const key = parseByInput($('xKey').value, $('xKFmt').value);
+    const out = xorBytes(data, key);
+    const t = bytesToText(out);
+    box.replaceChildren(
+      resultBox(t, { meta: [chip('文字として'), el('span', { text: ` 読める率 ${Math.round(xorScore(out) * 100)}%` })], cls: FLAG_SHAPE.test(t) ? 'flag' : '' }),
+      resultBox(hexEnc(out), { meta: [chip('16進数として')] })
+    );
+  } catch (e) { showErr(box, e); }
+});
+$('xBrute').addEventListener('click', () => {
+  const box = $('xOut');
+  try {
+    const data = parseByInput($('xIn').value, $('xFmt').value);
+    if (!data.length) throw new Error('データを入れてね');
+    const rows = [];
+    for (let k = 0; k < 256; k++) {
+      const out = xorBytes(data, [k]); const t = bytesToText(out);
+      rows.push({ k, t, sc: xorScore(out) + (FLAG_KNOWN.test(t) ? 2 : 0) + (1 / (1 + englishScore(t))) * 0.3 });
+    }
+    rows.sort((a, b) => b.sc - a.sc);
+    box.replaceChildren(el('div', { class: 'note', text: '256通りのうち、読めそうな順に上位15件' }), ...rows.slice(0, 15).map(r => {
+      const meta = [chip(`鍵 = ${r.k} (0x${r.k.toString(16).padStart(2, '0')}) '${r.k >= 32 && r.k < 127 ? String.fromCharCode(r.k) : '・'}'`)];
+      const isF = FLAG_KNOWN.test(r.t); if (isF) meta.unshift(badge('FLAG'));
+      return resultBox(r.t, { meta, cls: isF ? 'flag' : '' });
+    }));
+  } catch (e) { showErr(box, e); }
+});
+
+// ----- ヴィジュネル -----
+function runVig(d) { const box = $('vOut'); try { const t = vigenere($('vIn').value, $('vKey').value, d); box.replaceChildren(resultBox(t, { meta: [chip(d ? '復号' : '暗号化')], cls: FLAG_KNOWN.test(t) ? 'flag' : '' })); } catch (e) { showErr(box, e); } }
+$('vDec').addEventListener('click', () => runVig(true));
+$('vEnc').addEventListener('click', () => runVig(false));
+
+// ----- 進数 -----
+function parseBig(s, from) {
+  let t = s.trim().replace(/[_\s]/g, '').toLowerCase(); let base = from === 'auto' ? 10 : +from;
+  if (from === 'auto') { if (t.startsWith('0x')) { base = 16; t = t.slice(2); } else if (t.startsWith('0b')) { base = 2; t = t.slice(2); } else if (t.startsWith('0o')) { base = 8; t = t.slice(2); } }
+  else if (/^0[xbo]/.test(t) && base !== 36) t = t.slice(2);
+  if (!t) throw new Error('数を入れてね');
+  const digits = '0123456789abcdefghijklmnopqrstuvwxyz'.slice(0, base);
+  let n = 0n; for (const c of t) { const i = digits.indexOf(c); if (i < 0) throw new Error(`「${c}」は${base}進数では使えない文字です`); n = n * BigInt(base) + BigInt(i); }
+  return { n, base };
+}
+$('nRun').addEventListener('click', () => {
+  const box = $('nOut');
+  try {
+    const { n, base } = parseBig($('nIn').value, $('nFrom').value);
+    const tb = bigToBytes(n), txt = bytesToText(tb);
+    const tbl = el('table', { class: 'kv' });
+    [['読み取った進数', base + '進数'], ['2進数', n.toString(2)], ['8進数', n.toString(8)], ['10進数', n.toString(10)], ['16進数', n.toString(16)], ['36進数', n.toString(36)]]
+      .forEach(([k, v]) => tbl.append(el('tr', {}, el('td', { text: k }), el('td', { text: v }))));
+    box.replaceChildren(el('div', { class: 'res' }, tbl),
+      resultBox(txt, { meta: [chip('数を文字として読む (long_to_bytes)'), el('span', { text: ` 読める率 ${Math.round(printableRatio(txt) * 100)}%` })], cls: FLAG_SHAPE.test(txt) ? 'flag' : '' }));
+  } catch (e) { showErr(box, e); }
+});
+
+// ----- ハッシュ -----
+const hasSubtle = !!(window.crypto && crypto.subtle);
+$('hRun').addEventListener('click', async () => {
+  const box = $('hOut'); const s = $('hIn').value;
+  const list = [['MD5', md5(s)]];
+  if (hasSubtle) for (const a of ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512']) list.push([a, await shaHex(a, s)]);
+  box.replaceChildren(...list.map(([n, h]) => resultBox(h, { meta: [chip(n), el('span', { text: ` ${h.length}文字` })] })));
+  if (!hasSubtle) box.append(el('div', { class: 'note', text: 'この画面ではSHA系が使えないため、MD5だけ表示しています。' }));
+});
+let dictCache = null;
+async function buildDict() {
+  if (dictCache) return dictCache;
+  const m = new Map();
+  for (const w of COMMON_PW) {
+    m.set(md5(w), [w, 'MD5']);
+    if (hasSubtle) for (const a of ['SHA-1', 'SHA-256', 'SHA-512']) m.set(await shaHex(a, w), [w, a]);
+  }
+  return dictCache = m;
+}
+$('iRun').addEventListener('click', async () => {
+  const box = $('iOut'); const h = $('iIn').value.trim();
+  if (!h) return showErr(box, 'ハッシュ値を入れてね');
+  const kinds = identifyHash(h);
+  const kids = [el('div', { class: 'res' }, el('div', { class: 'meta', text: `長さ ${h.length}文字 → 考えられる種類` }),
+    el('pre', { text: kinds.length ? kinds.join('\n') : 'わかりませんでした（16進数ではない、または珍しい形式）' }))];
+  const hit = (await buildDict()).get(h.toLowerCase());
+  if (hit) kids.push(resultBox(hit[0], { meta: [badge('見つかった！'), chip(hit[1]), el('span', { text: ' 元の文字はこれ' })], cls: 'flag' }));
+  else kids.push(el('div', { class: 'note', text: `よく使われるパスワード ${COMMON_PW.length}個 とは一致しませんでした。` }));
+  box.replaceChildren(...kids);
+});
+// ----- ファイル -----
+const fmtSize = n => n < 1024 ? n + ' バイト' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+const kvTable = rows => { const t = el('table', { class: 'kv' }); rows.forEach(([k, v]) => t.append(el('tr', {}, el('td', { text: k }), el('td', {}, v)))); return t; };
+async function decodeImage(bytes, mime) {
+  try {
+    const bmp = await createImageBitmap(new Blob([bytes], { type: mime }), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+    const w = Math.min(bmp.width, 4096), h = Math.min(bmp.height, 4096);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0);
+    return g.getImageData(0, 0, w, h);
+  } catch (e) { return null; }
+}
+function bitplaneViewer(img) {
+  const cv = el('canvas', { class: 'preview' }); cv.width = img.width; cv.height = img.height;
+  const chSel = el('select', {}, ...[['orig', '元の画像'], ['0', '赤 (R)'], ['1', '緑 (G)'], ['2', '青 (B)'], ['3', '透明度 (A)']].map(([v, t]) => el('option', { value: v, text: t })));
+  const bitSel = el('select', {}, ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => el('option', { value: i, text: `第${i}ビット` + (i === 0 ? '（一番下）' : i === 7 ? '（一番上）' : '') })));
+  const g = cv.getContext('2d');
+  const draw = () => {
+    if (chSel.value === 'orig') { g.putImageData(img, 0, 0); bitSel.disabled = true; return; }
+    bitSel.disabled = false;
+    const c = +chSel.value, bit = +bitSel.value, src = img.data, out = new ImageData(img.width, img.height), d = out.data;
+    for (let i = 0; i < src.length; i += 4) { const v = (src[i + c] >> bit) & 1 ? 255 : 0; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
+    g.putImageData(out, 0, 0);
+  };
+  chSel.addEventListener('change', draw); bitSel.addEventListener('change', draw);
+  chSel.value = '0'; draw();
+  return el('div', {}, el('h3', { text: '🔬 ビットプレーン（色を1ビットずつ分けて見る）' }),
+    el('div', { class: 'note', text: '色の数字を2進数にしたときの「1けた」だけを白黒で表示します。第0ビットに文字やQRコードが見えたら、そこに何か隠されています。' }),
+    el('div', { class: 'bp' }, chSel, bitSel), cv);
+}
+function renderReport(rep, open) {
+  const body = [];
+  const info = [['大きさ', fmtSize(rep.size)], ['種類', rep.type ? rep.type.n : 'わからない']];
+  if (rep.image) info.push(['画像のサイズ', rep.img ? `${rep.img.width} × ${rep.img.height}` : '-']);
+  body.push(kvTable(info));
+  if (rep.extMismatch) body.push(el('div', { class: 'warn', text: '⚠ ' + rep.extMismatch }));
+  if (rep.headerFix) body.push(el('div', { class: 'warn', text: `⚠ ファイルの先頭（マジックナンバー）が壊されていました。中身は${rep.headerFix}画像のようなので、先頭を直したものを下で調べています。` }));
+  if (rep.ihdrFix) body.push(el('div', { class: 'warn', text: `⚠ PNGの大きさが書き換えられていました！ 本当の大きさは ${rep.ihdrFix.w} × ${rep.ihdrFix.h} です。直した画像を下に表示しています（隠れていた部分に答えがあるかも）。` }));
+  else if (rep.png && rep.png.ihdr && !rep.png.ihdr.crcOk) body.push(el('div', { class: 'warn', text: '⚠ PNGのIHDR（大きさの情報）のチェック値が合いません。大きさが書き換えられていますが、正しい値は見つかりませんでした。' }));
+  if (rep.imgUrl) {
+    const im = el('img', { class: 'preview', src: rep.imgUrl, alt: rep.name }), nt = el('div', { class: 'note', text: '画像を長押しすると保存できます。' });
+    im.addEventListener('error', () => { im.remove(); nt.textContent = 'この画像はこわれていて、そのままでは表示できませんでした。'; });
+    body.push(im, nt);
+  }
+  if (rep.trailing) body.push(el('div', { class: 'warn', text: `⚠ ファイルが終わったあとに、${fmtSize(rep.trailing.len)} の余分なデータがくっついていました（${rep.trailing.off.toString(16)}番地から）。` }));
+  if (rep.embedded && rep.embedded.length) {
+    body.push(el('h3', { text: '🧩 中に隠れているかもしれないファイル' }), kvTable(rep.embedded.slice(0, 20).map(h => [h.off.toString(16) + '番地', h.n])));
+    body.push(el('div', { class: 'note', text: '番地（ファイルの先頭から何バイト目か）は16進数です。見つかったものは自動で取り出して、下で調べています。' }));
+  }
+  if (rep.png) {
+    body.push(el('h3', { text: '🧱 PNGのチャンク（PNGを作っている部品）' }));
+    body.push(el('pre', { class: 'dump', text: rep.png.chunks.map(c => `${c.type}  ${String(c.len).padStart(8)} バイト  ${c.broken ? '途中で切れている' : c.crcOk ? 'OK' : 'チェック値がおかしい ⚠'}`).join('\n') }));
+    if (rep.png.texts.length) { body.push(el('h3', { text: '📝 PNGに書かれたテキスト' })); rep.png.texts.forEach(t => body.push(resultBox(t.val, { meta: [chip(t.key)] }))); }
+  }
+  if (rep.jpeg && rep.jpeg.comments.length) { body.push(el('h3', { text: '📝 JPEGのコメント' })); rep.jpeg.comments.forEach(c => body.push(resultBox(c))); }
+  if (rep.exif && (rep.exif.tags.length || rep.exif.gps)) {
+    body.push(el('h3', { text: '📷 EXIF（写真に記録された情報）' }));
+    rep.exif.tags.forEach(t => body.push(resultBox(t.val, { meta: [chip(t.name)] })));
+    if (rep.exif.gps) {
+      const { lat, lon } = rep.exif.gps, q = `${lat.toFixed(6)},${lon.toFixed(6)}`;
+      body.push(el('div', { class: 'warn' }, '📍 GPS（撮影した場所）が記録されています: ' + q + ' → ', el('a', { href: 'https://www.google.com/maps?q=' + q, target: '_blank', rel: 'noopener', text: 'Googleマップで開く' })));
+    }
+  }
+  if (rep.jpeg && rep.jpeg.xmp) body.push(el('details', {}, el('summary', { text: 'XMP（画像の追加情報）を見る' }), el('pre', { class: 'dump', text: rep.jpeg.xmp })));
+  if (rep.zip) {
+    body.push(el('h3', { text: '📦 ZIPの中身' }));
+    body.push(kvTable(rep.zip.entries.map(e => [e.encrypted ? '🔒 ' + e.name : e.name, e.dir ? 'フォルダ' : `${fmtSize(e.usize)}` + (e.encrypted ? '（パスワード付き）' : e.ok === false ? '（取り出せない形式）' : '')])));
+    if (rep.zip.comment) body.push(resultBox(rep.zip.comment, { meta: [chip('ZIPのコメント')] }));
+  }
+  if (rep.tar) { body.push(el('h3', { text: '📦 TARの中身' }), kvTable(rep.tar.map(t => [t.name, fmtSize(t.size)]))); }
+  if (rep.pdfStreams) body.push(el('div', { class: 'note', text: `PDFの中のデータ（ストリーム）を ${rep.pdfStreams} 個 取り出して調べました。` }));
+  if (rep.lsb && rep.lsb.length) { body.push(el('h3', { text: '🎨 LSBで見つかった文字' })); rep.lsb.slice(0, 6).forEach(l => body.push(resultBox(l.text, { meta: [chip(l.name)] }))); }
+  if (rep.img) body.push(bitplaneViewer(rep.img));
+  if (rep.hints && rep.hints.length) { body.push(el('h3', { text: '💡 次に試してみること' })); rep.hints.forEach(h => body.push(el('div', { class: 'hint', text: h }))); }
+  // strings
+  const ss = rep.strings || [];
+  const box = el('div'); const q = el('input', { placeholder: '絞り込み（例: flag, pass, http）' });
+  const showS = () => { const k = q.value.toLowerCase(); const list = ss.filter(x => !k || x.s.toLowerCase().includes(k)); box.replaceChildren(el('pre', { class: 'dump', text: list.slice(0, 400).map(x => x.off.toString(16).padStart(8, '0') + (x.u16 ? ' [UTF-16] ' : '  ') + x.s).join('\n') || '（なし）' }), el('div', { class: 'note', text: `${list.length}件` + (list.length > 400 ? '（最初の400件を表示）' : '') })); };
+  q.addEventListener('input', showS);
+  const sd = el('details', {}, el('summary', { text: `🔤 文字列（strings）${ss.length}件を見る` }), el('div', { class: 'note', text: 'ファイルの中にある、4文字以上つながった読める文字を集めたものです。左の数字は番地です。' }), q, box);
+  sd.addEventListener('toggle', () => { if (sd.open && !box.childNodes.length) showS(); });
+  body.push(sd);
+  body.push(el('details', {}, el('summary', { text: '🔍 16進ダンプ（ファイルの先頭512バイトを数字で見る）' }), el('div', { class: 'note', text: '左が番地、真ん中が1バイトずつの16進数、右がそれを文字にしたものです（読めない文字は . ）。先頭の数バイトでファイルの種類が決まります。' }), el('pre', { class: 'dump', text: hexdump(rep.bytes) })));
+  const d = el('details', { class: 'rep' }, el('summary', {}, (rep.depth ? '↳ ' : '📄 ') + rep.name, el('span', { class: 'sub2', text: rep.depth ? rep.where : fmtSize(rep.size) })), ...body);
+  if (open) d.open = true;
+  return el('div', { class: 'card' }, d);
+}
+async function runFile(file) {
+  const out = $('fOut'), prog = $('fProg');
+  if (!file) return;
+  if (file.size > 80 * 1048576) { prog.textContent = ''; return showErr(out, 'ファイルが大きすぎます（80MBまで）'); }
+  out.replaceChildren(); prog.textContent = '読み込み中…';
+  try {
+    const b = new Uint8Array(await file.arrayBuffer());
+    const ctx = await analyzeFile(b, file.name, $('fFlag').value.trim().replace(/\{$/, ''), t => { prog.textContent = '⏳ ' + t; });
+    for (const rep of ctx.reports) {
+      if (!rep.image) continue;
+      prog.textContent = '⏳ 画像の色を調べています（LSB）…'; await tick();
+      rep.imgUrl = URL.createObjectURL(new Blob([rep.bytes], { type: rep.image }));
+      rep.img = await decodeImage(rep.bytes, rep.image);
+      if (rep.img && rep.image !== 'image/jpeg') rep.lsb = lsbCheck(ctx, rep, rep.img.data, rep.img.width, rep.img.height);
+    }
+    cleanLike(ctx);
+    prog.textContent = `✅ 調べ終わりました（${ctx.reports.length}個のファイル・データを調べました）`;
+    const flags = [...ctx.flags.values()];
+    const fc = el('div', { class: 'card' }, el('h2', { text: flags.length ? `🚩 フラグが見つかりました！（${flags.length}個）` : '🚩 フラグは見つかりませんでした' }));
+    if (flags.length) flags.forEach(f => fc.append(el('div', { class: 'flagbig' }, resultBox(f.flag, { cls: 'flag', meta: [el('span', { text: '見つけた場所: ' + f.ways[0] })] }))));
+    else fc.append(el('div', { class: 'note', text: 'このツールで調べられる場所にはありませんでした。下の「次に試してみること」や、ビットプレーン・文字列を自分でも見てみよう。' }));
+    if (ctx.like.size) fc.append(el('details', {}, el('summary', { text: `フラグっぽい形の文字列（${ctx.like.size}件）` }), ...[...ctx.like].map(([k, w]) => resultBox(k, { meta: [el('span', { text: w })] }))));
+    out.append(fc);
+    const fixed = ctx.reports.filter(r => /直した/.test(r.where));
+    if (fixed.length) fc.append(el('div', { class: 'warn', text: '👀 こわれた画像を直しました。下の「' + fixed.map(r => r.name).join('」「') + '」を開いて、画像に答えが書かれていないか見てみよう！' }));
+    ctx.reports.forEach((r, i) => out.append(renderReport(r, i === 0 || /直した/.test(r.where))));
+  } catch (e) { showErr(out, e); prog.textContent = ''; }
+}
+$('fIn').addEventListener('change', e => { runFile(e.target.files[0]); });
+const drop = $('fDrop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) runFile(f); });
+</script>
+</body>
+</html>

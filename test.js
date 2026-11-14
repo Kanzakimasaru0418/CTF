@@ -1,0 +1,22 @@
+const c=require('./core.js');const a=require('assert');
+a.equal(c.md5(''),'d41d8cd98f00b204e9800998ecf8427e');
+a.equal(c.md5('hello'),'5d41402abc4b2a76b9719d911017c592');
+a.equal(c.md5('a'.repeat(100)),require('crypto').createHash('md5').update('a'.repeat(100)).digest('hex'));
+const s='flag{hello_CTF}';
+for (const [e,d] of [[c.b64Enc,c.b64Dec],[c.b32Enc,c.b32Dec],[c.b58Enc,c.b58Dec],[c.hexEnc,c.hexDec],[c.binEnc,c.binDec],[c.octEnc,c.octDec],[c.urlEnc,c.urlDec]]) a.equal(c.asText(d(e(s))),s,e.name);
+a.equal(c.decDec(c.decEnc(s)),s);a.equal(c.htmlDec(c.htmlEnc(s)),s);a.equal(c.uniDec(c.uniEnc('あflag')),'あflag');
+a.equal(c.morseDec(c.morseEnc('SOS HELP')),'SOS HELP');
+a.equal(c.b32Enc('f'),'MY======');a.equal(c.b58Enc('hello'),'Cn8eVZg');
+a.equal(c.rot47(c.rot47(s)),s);a.equal(c.atbash('abcXYZ'),'zyxCBA');
+a.equal(c.vigenere(c.vigenere('Attack at dawn','LEMON',false),'LEMON',true),'Attack at dawn');
+a.equal(c.vigenere('ATTACKATDAWN','LEMON',false),'LXFOPVEFRNHR');
+// magic: base64(hex(rot13(flag)))
+const chain=c.b64Enc(c.hexEnc(c.rot13('flag{magic_works}')));
+let r=c.magic(chain); console.log(r.slice(0,3).map(x=>[x.flag,x.path.join(' → '),x.text]));
+a.equal(r[0].text,'flag{magic_works}');
+r=c.magic(c.b64Enc(c.b32Enc('picoCTF{abc}')));console.log(r[0].path,r[0].text);
+r=c.magic(c.decEnc('ctf4b{dec}'));console.log(r[0].path,r[0].text);
+r=c.magic('synt{grfg}');console.log(r[0].path,r[0].text);
+r=c.magic(c.b64Enc('nara{custom}'),3,'nara');console.log(r[0].path,r[0].text);
+console.log(c.identifyHash(c.md5('x')));
+c.shaHex('SHA-256','abc').then(h=>{a.equal(h,'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');console.log('ALL OK')});

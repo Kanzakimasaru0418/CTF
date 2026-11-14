@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CTF ツールボックス</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+JP:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0f14; --panel:#121923; --panel2:#18212d; --line:#253142;
+  --text:#e6edf3; --muted:#8b98a9; --acc:#7ee787; --acc2:#79c0ff; --warn:#ffa657; --flag:#f2cc60;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace; --sans:'Noto Sans JP',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6}
+header{padding:20px 16px 8px;max-width:880px;margin:0 auto}
+header h1{margin:0;font-family:var(--mono);font-size:22px;letter-spacing:.02em}
+header h1 span{color:var(--acc)}
+header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 80%,transparent);padding:8px 0 10px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 16px;max-width:880px;margin:0 auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:7px 12px;border-radius:999px;font:600 13px var(--sans);cursor:pointer;white-space:nowrap}
+.tab[aria-selected=true]{background:var(--acc);color:#05210c;border-color:var(--acc)}
+main{max-width:880px;margin:0 auto;padding:0 16px 60px}
+section{display:none}
+section.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h2{font-size:18px;margin:4px 0 8px}
+details.help{background:var(--panel2);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:13.5px;color:#c9d4e0}
+details.help summary{cursor:pointer;color:var(--acc2);font-weight:600}
+details.help p{margin:6px 0}
+label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 4px}
+textarea,input,select{width:100%;background:#0a0e13;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:14px var(--mono)}
+textarea{min-height:96px;resize:vertical}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--acc2);outline-offset:-1px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button.b{border:0;border-radius:10px;padding:10px 14px;font:600 14px var(--sans);cursor:pointer;background:var(--acc);color:#05210c}
+button.b.sub{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button.b:active{transform:translateY(1px)}
+.out{margin-top:12px}
+.res{background:#0a0e13;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px;position:relative}
+.res.flag{border-color:var(--flag);box-shadow:0 0 0 1px var(--flag) inset}
+.res.best{border-color:var(--acc)}
+.res pre{margin:0;white-space:pre-wrap;word-break:break-all;font:13.5px/1.5 var(--mono);padding-right:56px}
+.res .meta{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding-right:56px}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:0 6px;font-family:var(--mono);font-size:11.5px;color:var(--acc2)}
+.badge{background:var(--flag);color:#2a1d00;border-radius:6px;padding:0 6px;font-weight:800;font-size:11.5px}
+.badge.g{background:var(--acc);color:#05210c}
+.copy{position:absolute;top:8px;right:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;font-size:12px;padding:3px 8px;cursor:pointer}
+.err{color:var(--warn);font-size:13px;margin-top:8px}
+.note{color:var(--muted);font-size:12.5px;margin-top:6px}
+.steps{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px}
+.freq{display:grid;grid-template-columns:repeat(26,1fr);gap:2px;align-items:end;height:90px;margin-top:8px}
+.freq div{background:var(--acc2);border-radius:2px 2px 0 0;min-height:1px;position:relative}
+.freqL{display:grid;grid-template-columns:repeat(26,1fr);gap:2px;font:10px var(--mono);color:var(--muted);text-align:center}
+table.kv{width:100%;border-collapse:collapse;font-size:13px}
+table.kv td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:top}
+table.kv td:first-child{color:var(--muted);white-space:nowrap;width:1%;padding-right:12px}
+table.kv td:last-child{font-family:var(--mono);word-break:break-all}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2px dashed var(--line);border-radius:14px;padding:26px 12px;margin:6px 0 4px;cursor:pointer;background:#0a0e13;color:var(--text)}
+.drop.over{border-color:var(--acc);background:#0f1a12}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop .big{font-weight:800;font-size:16px}
+.card h3{font-size:15px;margin:14px 0 6px;color:var(--acc2)}
+details.rep>summary{cursor:pointer;font-weight:700;list-style:none}
+details.rep>summary::-webkit-details-marker{display:none}
+details.rep>summary::before{content:'▶ ';color:var(--muted);font-size:12px}
+details.rep[open]>summary::before{content:'▼ '}
+.sub2{font-size:12px;color:var(--muted);font-weight:400;display:block;word-break:break-all}
+.warn{background:#2a1a08;border:1px solid #5a3a12;color:var(--warn);border-radius:10px;padding:8px 10px;font-size:13.5px;margin-top:8px}
+.hint{background:#0e1b2b;border:1px solid #1f3a5c;border-radius:10px;padding:8px 10px;font-size:13.5px;margin-top:8px}
+.preview{width:100%;height:auto;max-height:420px;object-fit:contain;border-radius:8px;border:1px solid var(--line);background:repeating-conic-gradient(#222 0 25%,#333 0 50%) 0 0/16px 16px;image-rendering:pixelated;display:block;margin-top:8px}
+.bp{display:flex;gap:8px;margin-top:8px}
+.bp select{flex:1}
+pre.dump{font:11px/1.45 var(--mono);overflow-x:auto;white-space:pre;background:#0a0e13;border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0 0;max-height:360px}
+.ok{color:var(--acc)} .ng{color:var(--warn)}
+.flagbig pre{font-size:15px;color:var(--flag);font-weight:600}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--acc);color:#05210c;padding:8px 14px;border-radius:999px;font-weight:600;font-size:13px;opacity:0;transition:.2s;pointer-events:none}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1><span>&gt;_</span> CTF ツールボックス</h1>
+  <p>暗号・エンコードをブラウザだけで解読します。入力した文字はどこにも送信されません。</p>
+</header>
+<nav><div class="tabs" role="tablist" id="tabs"></div></nav>
+<main>
+
+<!-- ファイル -->
+<section id="file" data-name="📁 ファイル">
+  <div class="card">
+    <h2>ファイルからフラグを探す</h2>
+    <details class="help"><summary>これは何？ 何を調べてくれるの？</summary>
+      <p>CTFの「フォレンジック」（ファイルの中から証拠を探す問題）や「ステガノグラフィ」（画像などに秘密のデータを隠す技術）でよく使われる隠し場所を、全部まとめて自動で調べます。</p>
+      <p>・ファイルの<b>本当の種類</b>（拡張子がウソでも中身で判定）<br>・中に書いてある<b>文字列</b>（strings）と、それがBase64などで変換されていないか<br>・<b>ファイルの後ろにくっついたデータ</b>や、<b>中に隠れた別のファイル</b>（binwalkと同じ考え方）<br>・ZIP・GZIP・PDF・TARの<b>中身</b><br>・画像の<b>EXIF</b>（撮影情報）やコメント、PNGのテキスト<br>・PNGの<b>高さの書き換え</b>（画像の下半分を隠すトリック）<br>・<b>LSB</b>（色の一番下のビットに文字を隠す方法）<br>・ファイル全体が<b>XOR</b>されていないか</p>
+      <p>ファイルはスマホやパソコンの中だけで調べるので、どこにも送られません。</p>
+    </details>
+    <label class="drop" id="fDrop" for="fIn">
+      <input type="file" id="fIn">
+      <span class="big">📂 ここをタップしてファイルを選ぶ</span>
+      <span class="note">パソコンならドラッグ＆ドロップ（ファイルをつかんでここに落とす）でもOK</span>
+    </label>
+    <label for="fFlag">フラグの頭の文字（わかれば。例: nitic）</label>
+    <input id="fFlag" placeholder="例: nitic">
+    <div class="note" id="fProg"></div>
+  </div>
+  <div id="fOut"></div>
+</section>
+
+<!-- 自動解析 -->
+<section id="magic" data-name="🔮 自動解析">
+  <div class="card">
+    <h2>自動解析（Magic）</h2>
+    <details class="help" open><summary>これは何？</summary>
+      <p>よくわからない文字列を貼ると、Base64・16進数・シーザー暗号など<b>いろいろな解読方法を自動で試します</b>。何回も重ねてエンコード（変換）されていても、最大3段まで追いかけます。</p>
+      <p><span class="badge">FLAG</span> がついた結果が、フラグ（CTFの答え。<code>flag{...}</code> のような形）の可能性が高いものです。</p>
+    </details>
+    <label for="mIn">解読したい文字列</label>
+    <textarea id="mIn" placeholder="例: NzM3OTZlNzQ3YjY4NmY2NzY1N2Q="></textarea>
+    <div class="row">
+      <div><label for="mFlag">フラグの頭の文字（わかれば）</label><input id="mFlag" placeholder="例: nitic"></div>
+      <div><label for="mDepth">何段まで追うか</label><select id="mDepth"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></div>
+    </div>
+    <div class="btns"><button class="b" id="mRun">解析する</button><button class="b sub" id="mEx">例を入れる</button></div>
+    <div class="out" id="mOut"></div>
+  </div>
+</section>
+
+<!-- 変換 -->
+<section id="conv" data-name="🔁 変換">
+  <div class="card">
+    <h2>エンコード／デコード</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>エンコード</b>（決まったルールで別の形に変えること）と<b>デコード</b>（元に戻すこと）を1つずつ手でやるツールです。</p>
+      <p>「結果を入力へ」を押すと、出てきた結果に続けて別の変換をかけられます（チェーン＝くさりのようにつなげること）。</p>
+    </details>
+    <label for="cIn">入力</label>
+    <textarea id="cIn" placeholder="ここに文字を入れる"></textarea>
+    <label for="cOp">方式</label>
+    <select id="cOp"></select>
+    <div class="btns">
+      <button class="b" id="cDec">デコード（元に戻す）</button>
+      <button class="b sub" id="cEnc">エンコード（変換する）</button>
+    </div>
+    <div class="out" id="cOut"></div>
+    <div class="btns"><button class="b sub" id="cChain">↑ 結果を入力へ</button><button class="b sub" id="cReset">手順をリセット</button></div>
+    <div class="steps" id="cSteps"></div>
+    <div class="note" id="cDesc"></div>
+  </div>
+</section>
+
+<!-- シーザー -->
+<section id="caesar" data-name="🏛 シーザー">
+  <div class="card">
+    <h2>シーザー暗号 総当たり</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>シーザー暗号</b>は、アルファベットを決まった数だけずらす暗号です（例：3つずらすと A→D、B→E）。ずらし方は25通りしかないので、<b>総当たり</b>（全部ためすこと）で必ず解けます。</p>
+      <p>いちばん英語っぽい結果に <span class="badge g">英語っぽい</span> がつきます。下のグラフは<b>頻度分析</b>（どの文字が何回出たか数えること）です。英語なら普通は E・T・A が多くなります。</p>
+    </details>
+    <label for="kIn">暗号文</label>
+    <textarea id="kIn" placeholder="例: Wkh txlfn eurzq ira"></textarea>
+    <div class="btns"><button class="b" id="kRun">25通り全部ためす</button></div>
+    <div id="kFreq"></div>
+    <div class="out" id="kOut"></div>
+  </div>
+</section>
+
+<!-- XOR -->
+<section id="xor" data-name="⊕ XOR">
+  <div class="card">
+    <h2>XOR</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>XOR</b>（排他的論理和。2つのビットが「ちがう」ときだけ1になる計算）は、CTFの暗号問題でとてもよく出ます。同じ鍵でもう一度XORすると元に戻る、という性質があります。</p>
+      <p>鍵がわからないときは「1バイト鍵を総当たり」で、鍵 0〜255 の256通りを全部ためせます。</p>
+    </details>
+    <div class="row">
+      <div><label for="xFmt">データの形式</label><select id="xFmt"><option value="hex">16進数 (hex)</option><option value="b64">Base64</option><option value="text">ふつうの文字</option><option value="dec">10進数 (0〜255)</option></select></div>
+      <div><label for="xKFmt">鍵の形式</label><select id="xKFmt"><option value="text">ふつうの文字</option><option value="hex">16進数 (hex)</option><option value="dec">10進数 (0〜255)</option></select></div>
+    </div>
+    <label for="xIn">データ</label>
+    <textarea id="xIn" placeholder="例: 1b1a121c0d"></textarea>
+    <label for="xKey">鍵（キー）</label>
+    <input id="xKey" placeholder="例: key">
+    <div class="btns"><button class="b" id="xRun">XORする</button><button class="b sub" id="xBrute">1バイト鍵を総当たり</button></div>
+    <div class="out" id="xOut"></div>
+  </div>
+</section>
+
+<!-- ヴィジュネル -->
+<section id="vig" data-name="🔑 ヴィジュネル">
+  <div class="card">
+    <h2>ヴィジュネル暗号</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>ヴィジュネル暗号</b>は、シーザー暗号の「ずらす数」を1文字ごとに変える暗号です。ずらす数は<b>鍵</b>（キー）の文字で決まります（A=0, B=1, …）。鍵がわかれば解けます。問題文の中に鍵のヒントが隠れていることが多いです。</p>
+    </details>
+    <label for="vIn">文章</label>
+    <textarea id="vIn" placeholder="例: LXFOPVEFRNHR"></textarea>
+    <label for="vKey">鍵（アルファベット）</label>
+    <input id="vKey" placeholder="例: LEMON">
+    <div class="btns"><button class="b" id="vDec">復号（元に戻す）</button><button class="b sub" id="vEnc">暗号化する</button></div>
+    <div class="out" id="vOut"></div>
+  </div>
+</section>
+
+<!-- 進数 -->
+<section id="base" data-name="🔢 進数">
+  <div class="card">
+    <h2>進数変換 ＆ 数→文字</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>進数</b>（数の書き方。2進数は0と1だけ、16進数は0〜9とa〜f）を変換します。とても大きな数もOKです。</p>
+      <p>「数を文字として読む」は、RSA暗号の問題などで出てくる大きな数を、文字に戻します（Pythonの <code>long_to_bytes</code> と同じ）。</p>
+    </details>
+    <label for="nIn">数</label>
+    <input id="nIn" placeholder="例: 0x666c6167 / 1718378855 / 0b1010">
+    <label for="nFrom">入力の進数</label>
+    <select id="nFrom"><option value="auto">自動（0x→16進, 0b→2進, 0o→8進, それ以外→10進）</option><option value="2">2進数</option><option value="8">8進数</option><option value="10">10進数</option><option value="16">16進数</option><option value="36">36進数</option></select>
+    <div class="btns"><button class="b" id="nRun">変換する</button></div>
+    <div class="out" id="nOut"></div>
+  </div>
+</section>
+
+<!-- ハッシュ -->
+<section id="hash" data-name="# ハッシュ">
+  <div class="card">
+    <h2>ハッシュを作る</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p><b>ハッシュ</b>は、文字から作る「指紋」のような値です。同じ文字からは必ず同じハッシュができますが、ハッシュから元の文字に戻すことは（基本的に）できません。</p>
+    </details>
+    <label for="hIn">文字</label>
+    <textarea id="hIn" placeholder="例: password"></textarea>
+    <div class="btns"><button class="b" id="hRun">ハッシュを計算</button></div>
+    <div class="out" id="hOut"></div>
+  </div>
+  <div class="card">
+    <h2>ハッシュの種類を調べる</h2>
+    <details class="help"><summary>これは何？</summary>
+      <p>ハッシュの<b>長さや形</b>から種類を推測します（MD5なら32文字、SHA-256なら64文字）。さらに、よく使われるパスワード約80個のハッシュと<b>照合</b>（同じか比べること）します。もっと本格的に調べるなら hashcat や John the Ripper というツールを使います。</p>
+    </details>
+    <label for="iIn">ハッシュ値</label>
+    <input id="iIn" placeholder="例: 5f4dcc3b5aa765d61d8327deb882cf99">
+    <div class="btns"><button class="b" id="iRun">調べる</button></div>
+    <div class="out" id="iOut"></div>
+  </div>
+</section>
+
+</main>
+<div class="toast" id="toast"></div>
+<script>
+/*CORE*/
+/*FCORE*/
+
+// ===== 画面まわり =====
+const $ = id => document.getElementById(id);
+function el(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in props) { if (k === 'class') e.className = props[k]; else if (k === 'text') e.textContent = props[k]; else e.setAttribute(k, props[k]); }
+  for (const c of kids) if (c != null) e.append(c);
+  return e;
+}
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1400); }
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); toast('コピーしました'); }
+  catch (e) { toast('コピーできませんでした。長押しで選んでね'); }
+}
+function resultBox(text, { meta = [], cls = '' } = {}) {
+  const pre = el('pre', { text: showable(text) });
+  const btn = el('button', { class: 'copy', text: 'コピー', type: 'button' });
+  btn.addEventListener('click', () => copyText(text));
+  const m = meta.length ? el('div', { class: 'meta' }, ...meta) : null;
+  return el('div', { class: 'res ' + cls }, btn, m, pre);
+}
+const chip = t => el('span', { class: 'chip', text: t });
+const badge = (t, g) => el('span', { class: 'badge' + (g ? ' g' : ''), text: t });
+function showErr(box, e) { box.replaceChildren(el('div', { class: 'err', text: '⚠ ' + (e && e.message ? e.message : e) })); }
+
+// タブ
+const sections = [...document.querySelectorAll('section')];
+function openTab(id) {
+  sections.forEach(s => s.classList.toggle('on', s.id === id));
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.id === id));
+  try { localStorage.setItem('ctf-tab', id); } catch (e) {}
+}
+sections.forEach(s => {
+  const b = el('button', { class: 'tab', role: 'tab', type: 'button', text: s.dataset.name });
+  b.dataset.id = s.id; b.addEventListener('click', () => { openTab(s.id); if (location.hash !== '#' + s.id) history.replaceState(null, '', '#' + s.id); });
+  $('tabs').append(b);
+});
+function initTab() {
+  const h = location.hash.slice(1); let saved = null;
+  try { saved = localStorage.getItem('ctf-tab'); } catch (e) {}
+  openTab(sections.some(s => s.id === h) ? h : (sections.some(s => s.id === saved) ? saved : 'file'));
+}
+window.addEventListener('hashchange', initTab); initTab();
+
+// ----- 自動解析 -----
+$('mEx').addEventListener('click', () => { $('mIn').value = b64Enc(hexEnc(rot13('flag{welcome_to_ctf}'))); });
+$('mRun').addEventListener('click', () => {
+  const box = $('mOut'); const s = $('mIn').value.trim();
+  if (!s) return showErr(box, '文字列を入れてね');
+  const r = magic(s, +$('mDepth').value, $('mFlag').value.trim().replace(/\{$/, ''));
+  box.replaceChildren();
+  if (!r.length) { box.append(el('div', { class: 'err', text: '読める結果が見つかりませんでした。XORやヴィジュネルなど、鍵が必要な暗号かもしれません。' })); return; }
+  const flags = r.filter(x => x.flag).length;
+  box.append(el('div', { class: 'note', text: `${r.length}件の候補が見つかりました` + (flags ? `（うちフラグっぽいもの ${flags}件）` : '') }));
+  r.slice(0, 40).forEach(x => {
+    const meta = [];
+    if (x.flag === 2) meta.push(badge('FLAG'));
+    else if (x.flag === 1) meta.push(badge('フラグっぽい形'));
+    if (x.path.length) x.path.forEach((p, i) => { if (i) meta.push(document.createTextNode('→')); meta.push(chip(p)); });
+    else meta.push(chip('そのまま'));
+    meta.push(el('span', { text: ` 読める率 ${Math.round(x.score * 100)}%` }));
+    box.append(resultBox(x.text, { meta, cls: x.flag ? 'flag' : '' }));
+  });
+});
+
+// ----- 変換 -----
+const OPS = {
+  b64: ['Base64', b64Dec, b64Enc, 'A〜Z, a〜z, 0〜9, +, / の64種類の文字と、最後の = が目印。CTFで一番よく見ます。'],
+  b32: ['Base32', b32Dec, b32Enc, '大文字のA〜Zと2〜7だけ。最後に = がたくさん付くことが多いです。'],
+  b58: ['Base58', b58Dec, b58Enc, 'まぎらわしい 0 O I l を使わない方式。ビットコインのアドレスなどで使われます。'],
+  hex: ['16進数 (Hex)', hexDec, hexEnc, '0〜9とa〜fだけ。2文字で1文字（1バイト）を表します。例: 66 = f'],
+  bin: ['2進数', binDec, binEnc, '0と1だけ。8けたで1文字です。例: 01100110 = f'],
+  oct: ['8進数', octDec, octEnc, '0〜7だけ。3けたで1文字です。例: 146 = f'],
+  dec: ['10進数（文字コード）', decDec, decEnc, '文字の番号（文字コード）を並べたもの。例: 102 = f'],
+  url: ['URLエンコード', urlDec, urlEnc, '%と16進数2けたの形。URL（Webのアドレス）に記号を入れるときに使います。'],
+  html: ['HTMLエンティティ', htmlDec, htmlEnc, '&#102; や &lt; のような形。Webページで記号を表すのに使います。'],
+  uni: ['Unicodeエスケープ', uniDec, uniEnc, '\\u0066 や \\x66 のような形。プログラムの中でよく見ます。'],
+  morse: ['モールス信号', morseDec, morseEnc, '. と - の組み合わせ。文字の区切りはスペース、単語の区切りは / です。'],
+  rot13: ['ROT13', rot13, rot13, 'アルファベットを13ずらす。2回やると元に戻るので、デコードもエンコードも同じです。'],
+  rot47: ['ROT47', rot47, rot47, '記号や数字もふくめて47ずらす。これも2回で元に戻ります。'],
+  atbash: ['Atbash', atbash, atbash, 'A↔Z、B↔Y のように、アルファベットを逆さまに入れかえる暗号です。'],
+  rev: ['逆順', reverse, reverse, '文字の順番を反対にします。'],
+};
+for (const k in OPS) $('cOp').append(el('option', { value: k, text: OPS[k][0] }));
+let lastConv = null, convSteps = [];
+const descUpdate = () => { $('cDesc').textContent = '💡 ' + OPS[$('cOp').value][3]; };
+$('cOp').addEventListener('change', descUpdate); descUpdate();
+function runConv(isDec) {
+  const box = $('cOut'); const op = OPS[$('cOp').value];
+  try {
+    const out = asText((isDec ? op[1] : op[2])($('cIn').value));
+    lastConv = { text: out, step: op[0] + (isDec ? ' デコード' : ' エンコード') };
+    box.replaceChildren(resultBox(out, { meta: [chip(lastConv.step), el('span', { text: ` 読める率 ${Math.round(printableRatio(out) * 100)}%` })], cls: FLAG_SHAPE.test(out) ? 'flag' : '' }));
+  } catch (e) { showErr(box, e); lastConv = null; }
+}
+$('cDec').addEventListener('click', () => runConv(true));
+$('cEnc').addEventListener('click', () => runConv(false));
+$('cChain').addEventListener('click', () => {
+  if (!lastConv) return toast('先に変換してね');
+  $('cIn').value = lastConv.text; convSteps.push(lastConv.step); lastConv = null; $('cOut').replaceChildren();
+  $('cSteps').textContent = 'ここまでの手順: ' + convSteps.join(' → ');
+});
+$('cReset').addEventListener('click', () => { convSteps = []; $('cSteps').textContent = ''; });
+
+// ----- シーザー -----
+$('kRun').addEventListener('click', () => {
+  const s = $('kIn').value; const box = $('kOut');
+  if (!s.trim()) return showErr(box, '暗号文を入れてね');
+  const f = letterFreq(s), mx = Math.max(1, ...f);
+  $('kFreq').replaceChildren(
+    el('label', { text: '頻度分析（文字の出てくる回数）' }),
+    el('div', { class: 'freq' }, ...f.map(v => { const d = el('div', { title: v + '回' }); d.style.height = (v / mx * 100) + '%'; return d; })),
+    el('div', { class: 'freqL' }, ...'abcdefghijklmnopqrstuvwxyz'.split('').map(c => el('span', { text: c })))
+  );
+  const rows = []; for (let k = 1; k < 26; k++) { const t = caesar(s, k); rows.push({ k, t, sc: englishScore(t) }); }
+  const best = rows.reduce((a, b) => a.sc < b.sc ? a : b);
+  box.replaceChildren(...rows.map(r => {
+    const meta = [chip(`+${r.k}ずらす` + (r.k === 13 ? ' (ROT13)' : '') + ` / 戻すなら -${26 - r.k}`)];
+    const isF = FLAG_KNOWN.test(r.t); if (isF) meta.unshift(badge('FLAG'));
+    if (r === best) meta.unshift(badge('英語っぽい', true));
+    return resultBox(r.t, { meta, cls: isF ? 'flag' : (r === best ? 'best' : '') });
+  }));
+});
+
+// ----- XOR -----
+function xorScore(b) { let g = 0; for (const x of b) if ((x >= 32 && x < 127) || x === 10 || x === 13 || x === 9) g++; return b.length ? g / b.length : 0; }
+$('xRun').addEventListener('click', () => {
+  const box = $('xOut');
+  try {
+    const data = parseByInput($('xIn').value, $('xFmt').value);
+    const key = parseByInput($('xKey').value, $('xKFmt').value);
+    const out = xorBytes(data, key);
+    const t = bytesToText(out);
+    box.replaceChildren(
+      resultBox(t, { meta: [chip('文字として'), el('span', { text: ` 読める率 ${Math.round(xorScore(out) * 100)}%` })], cls: FLAG_SHAPE.test(t) ? 'flag' : '' }),
+      resultBox(hexEnc(out), { meta: [chip('16進数として')] })
+    );
+  } catch (e) { showErr(box, e); }
+});
+$('xBrute').addEventListener('click', () => {
+  const box = $('xOut');
+  try {
+    const data = parseByInput($('xIn').value, $('xFmt').value);
+    if (!data.length) throw new Error('データを入れてね');
+    const rows = [];
+    for (let k = 0; k < 256; k++) {
+      const out = xorBytes(data, [k]); const t = bytesToText(out);
+      rows.push({ k, t, sc: xorScore(out) + (FLAG_KNOWN.test(t) ? 2 : 0) + (1 / (1 + englishScore(t))) * 0.3 });
+    }
+    rows.sort((a, b) => b.sc - a.sc);
+    box.replaceChildren(el('div', { class: 'note', text: '256通りのうち、読めそうな順に上位15件' }), ...rows.slice(0, 15).map(r => {
+      const meta = [chip(`鍵 = ${r.k} (0x${r.k.toString(16).padStart(2, '0')}) '${r.k >= 32 && r.k < 127 ? String.fromCharCode(r.k) : '・'}'`)];
+      const isF = FLAG_KNOWN.test(r.t); if (isF) meta.unshift(badge('FLAG'));
+      return resultBox(r.t, { meta, cls: isF ? 'flag' : '' });
+    }));
+  } catch (e) { showErr(box, e); }
+});
+
+// ----- ヴィジュネル -----
+function runVig(d) { const box = $('vOut'); try { const t = vigenere($('vIn').value, $('vKey').value, d); box.replaceChildren(resultBox(t, { meta: [chip(d ? '復号' : '暗号化')], cls: FLAG_KNOWN.test(t) ? 'flag' : '' })); } catch (e) { showErr(box, e); } }
+$('vDec').addEventListener('click', () => runVig(true));
+$('vEnc').addEventListener('click', () => runVig(false));
+
+// ----- 進数 -----
+function parseBig(s, from) {
+  let t = s.trim().replace(/[_\s]/g, '').toLowerCase(); let base = from === 'auto' ? 10 : +from;
+  if (from === 'auto') { if (t.startsWith('0x')) { base = 16; t = t.slice(2); } else if (t.startsWith('0b')) { base = 2; t = t.slice(2); } else if (t.startsWith('0o')) { base = 8; t = t.slice(2); } }
+  else if (/^0[xbo]/.test(t) && base !== 36) t = t.slice(2);
+  if (!t) throw new Error('数を入れてね');
+  const digits = '0123456789abcdefghijklmnopqrstuvwxyz'.slice(0, base);
+  let n = 0n; for (const c of t) { const i = digits.indexOf(c); if (i < 0) throw new Error(`「${c}」は${base}進数では使えない文字です`); n = n * BigInt(base) + BigInt(i); }
+  return { n, base };
+}
+$('nRun').addEventListener('click', () => {
+  const box = $('nOut');
+  try {
+    const { n, base } = parseBig($('nIn').value, $('nFrom').value);
+    const tb = bigToBytes(n), txt = bytesToText(tb);
+    const tbl = el('table', { class: 'kv' });
+    [['読み取った進数', base + '進数'], ['2進数', n.toString(2)], ['8進数', n.toString(8)], ['10進数', n.toString(10)], ['16進数', n.toString(16)], ['36進数', n.toString(36)]]
+      .forEach(([k, v]) => tbl.append(el('tr', {}, el('td', { text: k }), el('td', { text: v }))));
+    box.replaceChildren(el('div', { class: 'res' }, tbl),
+      resultBox(txt, { meta: [chip('数を文字として読む (long_to_bytes)'), el('span', { text: ` 読める率 ${Math.round(printableRatio(txt) * 100)}%` })], cls: FLAG_SHAPE.test(txt) ? 'flag' : '' }));
+  } catch (e) { showErr(box, e); }
+});
+
+// ----- ハッシュ -----
+const hasSubtle = !!(window.crypto && crypto.subtle);
+$('hRun').addEventListener('click', async () => {
+  const box = $('hOut'); const s = $('hIn').value;
+  const list = [['MD5', md5(s)]];
+  if (hasSubtle) for (const a of ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512']) list.push([a, await shaHex(a, s)]);
+  box.replaceChildren(...list.map(([n, h]) => resultBox(h, { meta: [chip(n), el('span', { text: ` ${h.length}文字` })] })));
+  if (!hasSubtle) box.append(el('div', { class: 'note', text: 'この画面ではSHA系が使えないため、MD5だけ表示しています。' }));
+});
+let dictCache = null;
+async function buildDict() {
+  if (dictCache) return dictCache;
+  const m = new Map();
+  for (const w of COMMON_PW) {
+    m.set(md5(w), [w, 'MD5']);
+    if (hasSubtle) for (const a of ['SHA-1', 'SHA-256', 'SHA-512']) m.set(await shaHex(a, w), [w, a]);
+  }
+  return dictCache = m;
+}
+$('iRun').addEventListener('click', async () => {
+  const box = $('iOut'); const h = $('iIn').value.trim();
+  if (!h) return showErr(box, 'ハッシュ値を入れてね');
+  const kinds = identifyHash(h);
+  const kids = [el('div', { class: 'res' }, el('div', { class: 'meta', text: `長さ ${h.length}文字 → 考えられる種類` }),
+    el('pre', { text: kinds.length ? kinds.join('\n') : 'わかりませんでした（16進数ではない、または珍しい形式）' }))];
+  const hit = (await buildDict()).get(h.toLowerCase());
+  if (hit) kids.push(resultBox(hit[0], { meta: [badge('見つかった！'), chip(hit[1]), el('span', { text: ' 元の文字はこれ' })], cls: 'flag' }));
+  else kids.push(el('div', { class: 'note', text: `よく使われるパスワード ${COMMON_PW.length}個 とは一致しませんでした。` }));
+  box.replaceChildren(...kids);
+});
+// ----- ファイル -----
+const fmtSize = n => n < 1024 ? n + ' バイト' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+const kvTable = rows => { const t = el('table', { class: 'kv' }); rows.forEach(([k, v]) => t.append(el('tr', {}, el('td', { text: k }), el('td', {}, v)))); return t; };
+async function decodeImage(bytes, mime) {
+  try {
+    const bmp = await createImageBitmap(new Blob([bytes], { type: mime }), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+    const w = Math.min(bmp.width, 4096), h = Math.min(bmp.height, 4096);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0);
+    return g.getImageData(0, 0, w, h);
+  } catch (e) { return null; }
+}
+function bitplaneViewer(img) {
+  const cv = el('canvas', { class: 'preview' }); cv.width = img.width; cv.height = img.height;
+  const chSel = el('select', {}, ...[['orig', '元の画像'], ['0', '赤 (R)'], ['1', '緑 (G)'], ['2', '青 (B)'], ['3', '透明度 (A)']].map(([v, t]) => el('option', { value: v, text: t })));
+  const bitSel = el('select', {}, ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => el('option', { value: i, text: `第${i}ビット` + (i === 0 ? '（一番下）' : i === 7 ? '（一番上）' : '') })));
+  const g = cv.getContext('2d');
+  const draw = () => {
+    if (chSel.value === 'orig') { g.putImageData(img, 0, 0); bitSel.disabled = true; return; }
+    bitSel.disabled = false;
+    const c = +chSel.value, bit = +bitSel.value, src = img.data, out = new ImageData(img.width, img.height), d = out.data;
+    for (let i = 0; i < src.length; i += 4) { const v = (src[i + c] >> bit) & 1 ? 255 : 0; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
+    g.putImageData(out, 0, 0);
+  };
+  chSel.addEventListener('change', draw); bitSel.addEventListener('change', draw);
+  chSel.value = '0'; draw();
+  return el('div', {}, el('h3', { text: '🔬 ビットプレーン（色を1ビットずつ分けて見る）' }),
+    el('div', { class: 'note', text: '色の数字を2進数にしたときの「1けた」だけを白黒で表示します。第0ビットに文字やQRコードが見えたら、そこに何か隠されています。' }),
+    el('div', { class: 'bp' }, chSel, bitSel), cv);
+}
+function renderReport(rep, open) {
+  const body = [];
+  const info = [['大きさ', fmtSize(rep.size)], ['種類', rep.type ? rep.type.n : 'わからない']];
+  if (rep.image) info.push(['画像のサイズ', rep.img ? `${rep.img.width} × ${rep.img.height}` : '-']);
+  body.push(kvTable(info));
+  if (rep.extMismatch) body.push(el('div', { class: 'warn', text: '⚠ ' + rep.extMismatch }));
+  if (rep.headerFix) body.push(el('div', { class: 'warn', text: `⚠ ファイルの先頭（マジックナンバー）が壊されていました。中身は${rep.headerFix}画像のようなので、先頭を直したものを下で調べています。` }));
+  if (rep.ihdrFix) body.push(el('div', { class: 'warn', text: `⚠ PNGの大きさが書き換えられていました！ 本当の大きさは ${rep.ihdrFix.w} × ${rep.ihdrFix.h} です。直した画像を下に表示しています（隠れていた部分に答えがあるかも）。` }));
+  else if (rep.png && rep.png.ihdr && !rep.png.ihdr.crcOk) body.push(el('div', { class: 'warn', text: '⚠ PNGのIHDR（大きさの情報）のチェック値が合いません。大きさが書き換えられていますが、正しい値は見つかりませんでした。' }));
+  if (rep.imgUrl) {
+    const im = el('img', { class: 'preview', src: rep.imgUrl, alt: rep.name }), nt = el('div', { class: 'note', text: '画像を長押しすると保存できます。' });
+    im.addEventListener('error', () => { im.remove(); nt.textContent = 'この画像はこわれていて、そのままでは表示できませんでした。'; });
+    body.push(im, nt);
+  }
+  if (rep.trailing) body.push(el('div', { class: 'warn', text: `⚠ ファイルが終わったあとに、${fmtSize(rep.trailing.len)} の余分なデータがくっついていました（${rep.trailing.off.toString(16)}番地から）。` }));
+  if (rep.embedded && rep.embedded.length) {
+    body.push(el('h3', { text: '🧩 中に隠れているかもしれないファイル' }), kvTable(rep.embedded.slice(0, 20).map(h => [h.off.toString(16) + '番地', h.n])));
+    body.push(el('div', { class: 'note', text: '番地（ファイルの先頭から何バイト目か）は16進数です。見つかったものは自動で取り出して、下で調べています。' }));
+  }
+  if (rep.png) {
+    body.push(el('h3', { text: '🧱 PNGのチャンク（PNGを作っている部品）' }));
+    body.push(el('pre', { class: 'dump', text: rep.png.chunks.map(c => `${c.type}  ${String(c.len).padStart(8)} バイト  ${c.broken ? '途中で切れている' : c.crcOk ? 'OK' : 'チェック値がおかしい ⚠'}`).join('\n') }));
+    if (rep.png.texts.length) { body.push(el('h3', { text: '📝 PNGに書かれたテキスト' })); rep.png.texts.forEach(t => body.push(resultBox(t.val, { meta: [chip(t.key)] }))); }
+  }
+  if (rep.jpeg && rep.jpeg.comments.length) { body.push(el('h3', { text: '📝 JPEGのコメント' })); rep.jpeg.comments.forEach(c => body.push(resultBox(c))); }
+  if (rep.exif && (rep.exif.tags.length || rep.exif.gps)) {
+    body.push(el('h3', { text: '📷 EXIF（写真に記録された情報）' }));
+    rep.exif.tags.forEach(t => body.push(resultBox(t.val, { meta: [chip(t.name)] })));
+    if (rep.exif.gps) {
+      const { lat, lon } = rep.exif.gps, q = `${lat.toFixed(6)},${lon.toFixed(6)}`;
+      body.push(el('div', { class: 'warn' }, '📍 GPS（撮影した場所）が記録されています: ' + q + ' → ', el('a', { href: 'https://www.google.com/maps?q=' + q, target: '_blank', rel: 'noopener', text: 'Googleマップで開く' })));
+    }
+  }
+  if (rep.jpeg && rep.jpeg.xmp) body.push(el('details', {}, el('summary', { text: 'XMP（画像の追加情報）を見る' }), el('pre', { class: 'dump', text: rep.jpeg.xmp })));
+  if (rep.zip) {
+    body.push(el('h3', { text: '📦 ZIPの中身' }));
+    body.push(kvTable(rep.zip.entries.map(e => [e.encrypted ? '🔒 ' + e.name : e.name, e.dir ? 'フォルダ' : `${fmtSize(e.usize)}` + (e.encrypted ? '（パスワード付き）' : e.ok === false ? '（取り出せない形式）' : '')])));
+    if (rep.zip.comment) body.push(resultBox(rep.zip.comment, { meta: [chip('ZIPのコメント')] }));
+  }
+  if (rep.tar) { body.push(el('h3', { text: '📦 TARの中身' }), kvTable(rep.tar.map(t => [t.name, fmtSize(t.size)]))); }
+  if (rep.pdfStreams) body.push(el('div', { class: 'note', text: `PDFの中のデータ（ストリーム）を ${rep.pdfStreams} 個 取り出して調べました。` }));
+  if (rep.lsb && rep.lsb.length) { body.push(el('h3', { text: '🎨 LSBで見つかった文字' })); rep.lsb.slice(0, 6).forEach(l => body.push(resultBox(l.text, { meta: [chip(l.name)] }))); }
+  if (rep.img) body.push(bitplaneViewer(rep.img));
+  if (rep.hints && rep.hints.length) { body.push(el('h3', { text: '💡 次に試してみること' })); rep.hints.forEach(h => body.push(el('div', { class: 'hint', text: h }))); }
+  // strings
+  const ss = rep.strings || [];
+  const box = el('div'); const q = el('input', { placeholder: '絞り込み（例: flag, pass, http）' });
+  const showS = () => { const k = q.value.toLowerCase(); const list = ss.filter(x => !k || x.s.toLowerCase().includes(k)); box.replaceChildren(el('pre', { class: 'dump', text: list.slice(0, 400).map(x => x.off.toString(16).padStart(8, '0') + (x.u16 ? ' [UTF-16] ' : '  ') + x.s).join('\n') || '（なし）' }), el('div', { class: 'note', text: `${list.length}件` + (list.length > 400 ? '（最初の400件を表示）' : '') })); };
+  q.addEventListener('input', showS);
+  const sd = el('details', {}, el('summary', { text: `🔤 文字列（strings）${ss.length}件を見る` }), el('div', { class: 'note', text: 'ファイルの中にある、4文字以上つながった読める文字を集めたものです。左の数字は番地です。' }), q, box);
+  sd.addEventListener('toggle', () => { if (sd.open && !box.childNodes.length) showS(); });
+  body.push(sd);
+  body.push(el('details', {}, el('summary', { text: '🔍 16進ダンプ（ファイルの先頭512バイトを数字で見る）' }), el('div', { class: 'note', text: '左が番地、真ん中が1バイトずつの16進数、右がそれを文字にしたものです（読めない文字は . ）。先頭の数バイトでファイルの種類が決まります。' }), el('pre', { class: 'dump', text: hexdump(rep.bytes) })));
+  const d = el('details', { class: 'rep' }, el('summary', {}, (rep.depth ? '↳ ' : '📄 ') + rep.name, el('span', { class: 'sub2', text: rep.depth ? rep.where : fmtSize(rep.size) })), ...body);
+  if (open) d.open = true;
+  return el('div', { class: 'card' }, d);
+}
+async function runFile(file) {
+  const out = $('fOut'), prog = $('fProg');
+  if (!file) return;
+  if (file.size > 80 * 1048576) { prog.textContent = ''; return showErr(out, 'ファイルが大きすぎます（80MBまで）'); }
+  out.replaceChildren(); prog.textContent = '読み込み中…';
+  try {
+    const b = new Uint8Array(await file.arrayBuffer());
+    const ctx = await analyzeFile(b, file.name, $('fFlag').value.trim().replace(/\{$/, ''), t => { prog.textContent = '⏳ ' + t; });
+    for (const rep of ctx.reports) {
+      if (!rep.image) continue;
+      prog.textContent = '⏳ 画像の色を調べています（LSB）…'; await tick();
+      rep.imgUrl = URL.createObjectURL(new Blob([rep.bytes], { type: rep.image }));
+      rep.img = await decodeImage(rep.bytes, rep.image);
+      if (rep.img && rep.image !== 'image/jpeg') rep.lsb = lsbCheck(ctx, rep, rep.img.data, rep.img.width, rep.img.height);
+    }
+    cleanLike(ctx);
+    prog.textContent = `✅ 調べ終わりました（${ctx.reports.length}個のファイル・データを調べました）`;
+    const flags = [...ctx.flags.values()];
+    const fc = el('div', { class: 'card' }, el('h2', { text: flags.length ? `🚩 フラグが見つかりました！（${flags.length}個）` : '🚩 フラグは見つかりませんでした' }));
+    if (flags.length) flags.forEach(f => fc.append(el('div', { class: 'flagbig' }, resultBox(f.flag, { cls: 'flag', meta: [el('span', { text: '見つけた場所: ' + f.ways[0] })] }))));
+    else fc.append(el('div', { class: 'note', text: 'このツールで調べられる場所にはありませんでした。下の「次に試してみること」や、ビットプレーン・文字列を自分でも見てみよう。' }));
+    if (ctx.like.size) fc.append(el('details', {}, el('summary', { text: `フラグっぽい形の文字列（${ctx.like.size}件）` }), ...[...ctx.like].map(([k, w]) => resultBox(k, { meta: [el('span', { text: w })] }))));
+    out.append(fc);
+    const fixed = ctx.reports.filter(r => /直した/.test(r.where));
+    if (fixed.length) fc.append(el('div', { class: 'warn', text: '👀 こわれた画像を直しました。下の「' + fixed.map(r => r.name).join('」「') + '」を開いて、画像に答えが書かれていないか見てみよう！' }));
+    ctx.reports.forEach((r, i) => out.append(renderReport(r, i === 0 || /直した/.test(r.where))));
+  } catch (e) { showErr(out, e); prog.textContent = ''; }
+}
+$('fIn').addEventListener('change', e => { runFile(e.target.files[0]); });
+const drop = $('fDrop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) runFile(f); });
+</script>
+</body>
+</html>
